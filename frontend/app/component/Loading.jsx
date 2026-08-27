@@ -1,59 +1,34 @@
-
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-function LoadingSpinner() {
-    return (
-        <div className="relative w-16 h-16">
-            <div className="absolute w-16 h-16 border-4 rounded-full border-red-500/20"></div>
-            <div className="absolute w-16 h-16 border-4 border-transparent rounded-full border-t-red-500 animate-spin"></div>
-            <div className="absolute w-16 h-16 border-4 border-transparent rounded-full border-l-red-600 animate-pulse"></div>
-        </div>
-    );
+export function LoadingSpinner({ size = 'md', className = '' }) {
+  const sizes = {
+    sm: 'w-6 h-6 border-2',
+    md: 'w-12 h-12 border-3',
+    lg: 'w-16 h-16 border-4',
+  };
+
+  return (
+    <div className={`relative ${sizes[size] || sizes.md} ${className}`}>
+      <div className="absolute inset-0 border-primary/20 rounded-full border-solid" />
+      <div className="absolute inset-0 border-transparent border-t-primary rounded-full animate-spin border-solid" />
+    </div>
+  );
 }
 
-
-function Loading() {
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        // Simulate data loading
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 3000);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-black">
-                <LoadingSpinner />
-                <div className="mt-8 space-y-2 text-center">
-                    <div className="text-2xl font-bold tracking-wider text-red-500 animate-pulse">
-                        LOADING
-                    </div>
-                    <div className="text-sm tracking-widest text-red-700/70">
-                        Please wait...
-                    </div>
-                </div>
-
-                {/* Decorative elements */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-900/0 via-red-500 to-red-900/0"></div>
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-red-900/0 via-red-500 to-red-900/0"></div>
-                <div className="absolute w-24 h-24 rounded-full top-4 left-4 bg-red-500/5 blur-xl"></div>
-                <div className="absolute w-32 h-32 rounded-full bottom-4 right-4 bg-red-500/5 blur-xl"></div>
-            </div>
-        );
-    }
-    return (
-        <>
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <p className="text-2xl">Content Loaded!</p>
-            </div>
-        </>
-    )
+export default function Loading({ message = 'Loading cinematic experience...' }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 bg-background text-foreground">
+      <LoadingSpinner size="lg" />
+      <div className="mt-6 space-y-1 text-center">
+        <h4 className="text-sm font-bold tracking-widest text-primary uppercase animate-pulse">
+          MOYBD
+        </h4>
+        <p className="text-xs text-foreground-muted tracking-wider">
+          {message}
+        </p>
+      </div>
+    </div>
+  );
 }
-
-export default Loading

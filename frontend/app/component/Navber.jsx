@@ -1,529 +1,592 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+'use client';
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [movies, setMovies] = useState([]);
-  const [filteredMovies, setFilteredMovies] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import Container from './ui/Container';
+import Button from './ui/Button';
+import IconButton from './ui/IconButton';
+import Badge from './ui/Badge';
+import {
+  FaSearch,
+  FaUser,
+  FaBars,
+  FaTimes,
+  FaChevronDown,
+  FaStar,
+  FaSignOutAlt,
+  FaFilm,
+  FaHeart,
+  FaHistory,
+  FaExclamationTriangle,
+  FaThLarge,
+} from 'react-icons/fa';
+
+const NAV_LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/movies', label: 'Movies' },
+  { href: '/series', label: 'Series' },
+  { href: '/contact', label: 'Contact' },
+];
+
+const CATEGORIES = [
+  { href: '/Hollywood', label: 'Hollywood' },
+  { href: '/Bollywood', label: 'Bollywood' },
+  { href: '/South', label: 'South' },
+  { href: '/Marvel_Studio', label: 'Marvel Studio' },
+  { href: '/Gujarati', label: 'Gujarati' },
+  { href: '/TV_Shows', label: 'TV Shows' },
+  { href: '/Web_Series', label: 'Web Series' },
+  { href: '/anime', label: 'Anime' },
+];
+
+export default function Navbar() {
+  const pathname = usePathname();
   const router = useRouter();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  // State
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [movies, setMovies] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen);
-  };
+  // Refs for click outside
+  const categoryRef = useRef(null);
+  const userMenuRef = useRef(null);
+  const searchRef = useRef(null);
 
+  // Handle scroll state for sticky backdrop
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Fetch movies for search
   useEffect(() => {
     const fetchMovies = async () => {
-      setIsLoading(true);
-      setError(null);
+      setIsSearching(true);
+      setSearchError(null);
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/movies`
         );
-        if (!response.ok) {
-          throw new Error("Failed to fetch movies");
-        }
+        if (!response.ok) throw new Error('Failed to fetch search catalog');
         const data = await response.json();
         setMovies(data.data || []);
       } catch (err) {
-        setError(err.message);
+        setSearchError(err.message);
       } finally {
-        setIsLoading(false);
+        setIsSearching(false);
       }
     };
     fetchMovies();
   }, []);
 
+  // Debounced search filtering
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      const results = movies.filter((movie) =>
-        movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!searchQuery.trim()) {
+      setFilteredMovies([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      const query = searchQuery.toLowerCase();
+      const results = movies.filter(
+        (m) =>
+          m.title?.toLowerCase().includes(query) ||
+          m.genre?.toLowerCase().includes(query)
       );
       setFilteredMovies(results);
-    }, 300);
-    return () => clearTimeout(timeoutId);
+    }, 250);
+    return () => clearTimeout(timer);
   }, [searchQuery, movies]);
 
-  const movieDetails = (slug) => {
-    router.push(`/download/${slug}`);
-  };
-
+  // Auth status check
   useEffect(() => {
     const checkLoginStatus = () => {
-      const storedLoginStatus =
-        Cookies.get("isLoggedIn") ||
-        sessionStorage.getItem("isLoggedIn") ||
-        localStorage.getItem("isLoggedIn");
-      if (storedLoginStatus === "true") {
-        setIsLoggedIn(true);
-      } else {
-        setIsLoggedIn(false);
-      }
+      const stored =
+        Cookies.get('isLoggedIn') ||
+        sessionStorage.getItem('isLoggedIn') ||
+        localStorage.getItem('isLoggedIn');
+      setIsLoggedIn(stored === 'true');
     };
 
     checkLoginStatus();
+    window.addEventListener('storage', checkLoginStatus);
+    return () => window.removeEventListener('storage', checkLoginStatus);
+  }, []);
 
-    window.addEventListener("storage", checkLoginStatus);
-
+  // Body scroll lock on mobile menu toggle
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
     return () => {
-      window.removeEventListener("storage", checkLoginStatus);
+      document.body.style.overflow = '';
+    };
+  }, [isMobileOpen]);
+
+  // Click outside & Escape key handlers
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (categoryRef.current && !categoryRef.current.contains(e.target)) {
+        setCategoryOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        // keep query but dismiss if clicked outside container
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setCategoryOpen(false);
+        setUserMenuOpen(false);
+        setIsMobileOpen(false);
+        setSearchQuery('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
-  const handleLogoutClick = () => {
-    setShowModal(true);
-  };
-
   const handleLogout = async () => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-  
-    localStorage.removeItem("isLoggedIn");
-    sessionStorage.removeItem("isLoggedIn");
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (e) {
+      console.error(e);
+    }
+    localStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('isLoggedIn');
     setIsLoggedIn(false);
-    setShowModal(false);
-    router.push("/");
+    setShowLogoutModal(false);
+    setUserMenuOpen(false);
+    router.push('/');
   };
 
-  const handleCancelLogout = () => {
-    setShowModal(false);
+  const handleSearchResultClick = (slug) => {
+    setSearchQuery('');
+    router.push(`/download/${slug}`);
   };
 
   return (
     <>
-      <nav className="flex items-center justify-between py-3 px-[2.5%]">
-        {/* Logo and Search */}
-        <div className="flex items-center">
-          <div className="flex items-center lg:justify-center">
-            <a href="/" className="flex items-center space-x-2 text-white">
-              <span
-                className="text-2xl sm:text-4xl font-semibold animate-gradient-text"
-                style={{
-                  background: "linear-gradient(90deg, red, blue)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  animation: "gradientAnimation 3s infinite",
-                }}
-              >
-                MOYBD
-              </span>
-            </a>
-            <style jsx>{`
-              @keyframes gradientAnimation {
-                0% {
-                  background-position: 0%;
-                }
-                100% {
-                  background-position: 100%;
-                }
-              }
-              .animate-gradient-text {
-                background-size: 200% 200%;
-              }
-            `}</style>
-          </div>
-          <div className="relative ml-4 md:block">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-[55vw] sm:w-[40vw] md:w-[35vw] lg:w[60vw] py-2 pl-8 pr-4 border border-red-500 focus:outline-none focus:shadow-[0_0_9px_rgba(254,0,0,0.8)] rounded-xl bg-transparent text-white text-sm"
-              aria-label="Search bar"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <span className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="23"
-                height="23"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M19.023 16.977a35.13 35.13 0 0 1-1.367-1.384c-.372-.378-.596-.653-.596-.653l-2.8-1.337A6.962 6.962 0 0 0 16 9c0-3.859-3.14-7-7-7S2 5.141 2 9s3.14 7 7 7c1.763 0 3.37-.66 4.603-1.739l1.337 2.8s.275.224.653.596c.387.363.896.854 1.384 1.367l1.358 1.392.604.646 2.121-2.121-.646-.604c-.379-.372-.885-.866-1.391-1.36zM9 14c-2.757 0-5-2.243-5-5s2.243-5 5-5 5 2.243 5 5-2.243 5-5 5z"></path>
-              </svg>
+      <header
+        className={`sticky top-0 z-40 w-full transition-all duration-normal ${
+          isScrolled
+            ? 'bg-background/95 backdrop-blur-md border-b border-border/50 shadow-subtle py-2.5'
+            : 'bg-gradient-to-b from-background/90 via-background/60 to-transparent py-4'
+        }`}
+      >
+        <Container className="flex items-center justify-between gap-4">
+          {/* Brand Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 group select-none outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-glow group-hover:scale-105 transition-transform duration-fast">
+              <FaFilm className="text-white text-base" />
+            </div>
+            <span className="text-xl sm:text-2xl font-black tracking-wider text-foreground">
+              MOY<span className="text-primary">BD</span>
             </span>
-            {/* Search Results */}
-            {searchQuery && (
-              <div className="absolute z-50 w-full mt-2 bg-[#dcdcdc] rounded-xl p-4 shadow-lg top-full overflow-auto h-[60vh]">
-                {isLoading ? (
-                  <p>Loading...</p>
-                ) : error ? (
-                  <p className="text-red-500">Error: {error}</p>
-                ) : filteredMovies.length ? (
-                  filteredMovies.map((movie) => (
-                    <div key={movie._id}>
+          </Link>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-fast relative ${
+                    isActive
+                      ? 'text-primary font-semibold'
+                      : 'text-foreground-secondary hover:text-foreground hover:bg-surface/50'
+                  }`}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full shadow-glow" />
+                  )}
+                </Link>
+              );
+            })}
+
+            {/* Categories Dropdown */}
+            <div className="relative" ref={categoryRef}>
+              <button
+                type="button"
+                onClick={() => setCategoryOpen(!categoryOpen)}
+                aria-expanded={categoryOpen}
+                aria-haspopup="true"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-fast ${
+                  categoryOpen || CATEGORIES.some((c) => pathname === c.href)
+                    ? 'text-primary font-semibold'
+                    : 'text-foreground-secondary hover:text-foreground hover:bg-surface/50'
+                }`}
+              >
+                <span>Categories</span>
+                <FaChevronDown
+                  className={`text-xs transition-transform duration-fast ${
+                    categoryOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {categoryOpen && (
+                <div className="absolute top-full left-0 mt-2 w-52 py-2 bg-surface-elevated border border-border/80 rounded-lg shadow-elevated backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2 duration-fast">
+                  <div className="px-3 py-1 text-[11px] font-semibold text-foreground-muted tracking-wider uppercase">
+                    Browse Genres
+                  </div>
+                  {CATEGORIES.map((cat) => {
+                    const isCatActive = pathname === cat.href;
+                    return (
+                      <Link
+                        key={cat.href}
+                        href={cat.href}
+                        onClick={() => setCategoryOpen(false)}
+                        className={`flex items-center justify-between px-3.5 py-2 text-sm font-medium transition-colors ${
+                          isCatActive
+                            ? 'bg-primary/10 text-primary font-semibold'
+                            : 'text-foreground-secondary hover:bg-surface hover:text-foreground'
+                        }`}
+                      >
+                        <span>{cat.label}</span>
+                        {isCatActive && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </nav>
+
+          {/* Search Entry Point & Auth Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Search Input Box */}
+            <div className="relative" ref={searchRef}>
+              <div className="relative flex items-center">
+                <FaSearch className="absolute left-3 text-foreground-muted text-sm pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search movies..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-36 sm:w-52 lg:w-64 pl-9 pr-3 py-1.5 bg-surface/80 border border-border/60 focus:border-primary focus:bg-surface text-foreground placeholder:text-foreground-muted text-xs sm:text-sm rounded-pill transition-all duration-fast outline-none"
+                  aria-label="Search movies"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 text-xs text-foreground-muted hover:text-foreground"
+                    aria-label="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Search Dropdown Overlay Results */}
+              {searchQuery.trim() && (
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-96 max-h-96 overflow-y-auto bg-surface-elevated border border-border rounded-xl shadow-modal z-50 p-2 space-y-1">
+                  {isSearching ? (
+                    <div className="p-4 text-center text-xs text-foreground-muted">
+                      Searching catalog...
+                    </div>
+                  ) : searchError ? (
+                    <div className="p-3 text-center text-xs text-error">
+                      {searchError}
+                    </div>
+                  ) : filteredMovies.length > 0 ? (
+                    filteredMovies.slice(0, 8).map((movie) => (
                       <div
-                        onClick={() => movieDetails(movie.slug)}
+                        key={movie._id || movie.slug}
+                        onClick={() => handleSearchResultClick(movie.slug)}
                         role="button"
-                        className="flex items-center gap-4 mb-2 cursor-pointer"
+                        tabIndex={0}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface transition-colors cursor-pointer"
                       >
                         <img
-                          src={movie.smposter}
+                          src={movie.smposter || '/fallback-poster.png'}
                           alt={movie.title}
-                          className="w-12 h-16 rounded-md"
+                          className="w-10 h-14 object-cover rounded"
                         />
-                        <div className="flex flex-col text-black">
-                          <p className="text-sm font-bold sm:text-base md:text-lg">
-                            Title: {movie.title}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {movie.title}
                           </p>
-                          <div className="flex flex-col sm:gap-2 sm:flex-row">
-                            <p className="text-xs font-semibold md:text-sm">
-                              Rating: {movie.rating}
-                            </p>
-                            <p className="text-xs font-semibold md:text-sm">
-                              Year: {movie.year}
-                            </p>
+                          <div className="flex items-center gap-2 text-xs text-foreground-muted mt-0.5">
+                            <span>{movie.year || 'N/A'}</span>
+                            {movie.rating && (
+                              <span className="flex items-center gap-1 text-rating font-medium">
+                                <FaStar className="text-[10px]" />
+                                {movie.rating}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
-                      <hr className="pb-3 border-gray-900" />
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-xs text-foreground-muted">
+                      No movies matching &quot;{searchQuery}&quot;
                     </div>
-                  ))
-                ) : (
-                  <p className="text-black">No results found</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        {/* Desktop Menu */}
-        <div className="items-center hidden space-x-2 md:flex lg:space-x-4">
-          <a href="/" className="font-semibold text-white hover:text-red-500">
-            Home
-          </a>
-          <a
-            href="/movies"
-            className="font-semibold text-white hover:text-red-500"
-          >
-            Movies
-          </a>
-          <a
-            href="/series"
-            className="font-semibold text-white hover:text-red-500"
-          >
-            Series
-          </a>
-          <div className="relative group">
-            <button
-              className="flex items-center font-semibold text-white hover:text-red-500"
-              onClick={toggleDropdown}
-            >
-              Categories
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16px"
-                height="16px"
-                className="ml-1"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M12 16a1 1 0 0 1-.71-.29l-6-6a1 1 0 0 1 1.42-1.42l5.29 5.3 5.29-5.29a1 1 0 0 1 1.41 1.41l-6 6a1 1 0 0 1-.7.29z"></path>
-              </svg>
-            </button>
-            {dropdownOpen && (
-              <ul className="absolute mt-2 text-white bg-gray-800 rounded-md shadow-lg w-[200px] z-50">
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/Hollywood">Hollywood</a>
-                </li>
-                <hr className="border-t-gray-400 w-[90%] mx-auto" />
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/Bollywood">Bollywood</a>
-                </li>
-                <hr className="border-t-gray-400 w-[90%] mx-auto" />
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/South"> South</a>
-                </li>
-                <hr className="border-t-gray-400 w-[90%] mx-auto" />
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/Marvel_Studio"> Marvel Studio</a>
-                </li>
-                <hr className="border-t-gray-400 w-[90%] mx-auto" />
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/Gujarati"> Gujarati</a>
-                </li>
-                <hr className="border-t-gray-400 w-[90%] mx-auto" />
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/TV_Shows"> TV Shows</a>
-                </li>
-                <hr className="border-t-gray-400 w-[90%] mx-auto" />
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/Web_Series"> Web Series</a>
-                </li>
-                <hr className="border-t-gray-400 w-[90%] mx-auto" />
-                <li className="px-4 py-2 hover:bg-gray-700">
-                  <a href="/anime">Anime</a>
-                </li>
-              </ul>
-            )}
-          </div>
-          <a
-            href="/contact"
-            className="font-semibold text-white hover:text-red-500"
-          >
-            Contact
-          </a>
-          {!isLoggedIn ? (
-            <>
-              <a
-                href="/login"
-                className="px-3 py-1 font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700"
-              >
-                Sign In
-              </a>
-            </>
-          ) : (
-            <button
-              onClick={handleLogoutClick}
-              className="relative flex items-center justify-start overflow-hidden transition-all duration-200 bg-red-600 rounded-full shadow-lg cursor-pointer group w-11 h-11 hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
-            >
-              <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
-                <svg className="w-4 h-4" viewBox="0 0 512 512" fill="white">
-                  <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
-                </svg>
-              </div>
-              <div className="absolute text-lg font-semibold text-white transition-all duration-300 transform translate-x-full opacity-0 right-5 group-hover:translate-x-0 group-hover:opacity-100">
-                Logout
-              </div>
-            </button>
-          )}
-        </div>
-        {/* Mobile Menu Toggle */}
-        <button onClick={toggleMenu} className="text-white md:hidden">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="currentColor"
-          >
-            <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"></path>
-          </svg>
-        </button>
-      </nav>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="absolute right-0 z-50 bg-gray-900 w-[60vw] h-full top-16 md:hidden rounded-2xl">
-          <div className="relative left-[10%] flex flex-col py-4 space-y-4 mt-3">
-            <ul>
-              <li className="py-2 border-b">
-                <a
-                  href="/"
-                  className="block font-semibold text-white hover:text-red-500"
-                >
-                  Home
-                </a>
-              </li>
-              <li className="py-2 border-b">
-                <a
-                  href="/movies"
-                  className="block font-semibold text-white hover:text-red-500"
-                >
-                  Movies
-                </a>
-              </li>
-              <li className="py-2 border-b">
-                <a
-                  href="/series"
-                  className="block font-semibold text-white hover:text-red-500"
-                >
-                  Series
-                </a>
-              </li>
-              <div className="relative py-2 border-b">
-                <button
-                  onClick={toggleDropdown}
-                  className="hover:text-red-500 text-white font-semibold hover:fill-[red] block fill-[white]"
-                >
-                  Category
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16px"
-                    height="16px"
-                    className="inline-block ml-1"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 16a1 1 0 0 1-.71-.29l-6-6a1 1 0 0 1 1.42-1.42l5.29 5.3 5.29-5.29a1 1 0 0 1 1.41 1.41l-6 6a1 1 0 0 1-.7.29z"
-                      data-name="16"
-                      data-original="#000000"
-                    />
-                  </svg>
-                </button>
-                {dropdownOpen && (
-                  <ul className="py-2 space-y-1 bg-gray-900 ">
-                    <li className="py-1">
-                      <a
-                        href="/Hollywood"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        Hollywood
-                      </a>
-                    </li>
-                    <li className="py-1">
-                      <a
-                        href="/Bollywood"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        Bollywood
-                      </a>
-                    </li>
-                    <li className="py-1">
-                      <a
-                        href="/South"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        South
-                      </a>
-                    </li>
-                    <li className="py-1">
-                      <a
-                        href="/Marvel_Studio"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        Marvel Studio
-                      </a>
-                    </li>
-                    <li className="py-1">
-                      <a
-                        href="/Gujarati"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        Gujarati
-                      </a>
-                    </li>
-                    <li className="py-1">
-                      <a
-                        href="/TV_Shows"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        TV Shows
-                      </a>
-                    </li>
-                    <li className="py-1">
-                      <a
-                        href="/Web_Series"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        Web Series
-                      </a>
-                    </li>
-                    <li className="py-1">
-                      <a
-                        href="/anime"
-                        className="block text-sm font-bold text-white hover:text-red-500"
-                      >
-                        Anime
-                      </a>
-                    </li>
-                  </ul>
-                )}
-              </div>
-
-              <li className="py-2 border-b">
-                <a
-                  href="/contact"
-                  className="block font-semibold text-white hover:text-red-500"
-                >
-                  Contact
-                </a>
-              </li>
-              {!isLoggedIn ? (
-                <>
-                  <li className="py-2 border-b">
-                    <a
-                      href="/login"
-                      className="px-3 py-1 font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700"
-                    >
-                      Sign In
-                    </a>
-                  </li>
-                </>
-              ) : (
-                <li className="py-2 border-b">
-                  <button
-                    onClick={handleLogoutClick}
-                    className="block font-semibold text-red-500 "
-                  >
-                    Log Out
-                  </button>
-                </li>
+                  )}
+                </div>
               )}
-            </ul>
+            </div>
+
+            {/* Auth / Profile Area */}
+            <div className="hidden sm:flex items-center gap-2">
+              {!isLoggedIn ? (
+                <Link href="/login">
+                  <Button variant="primary" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+              ) : (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    aria-expanded={userMenuOpen}
+                    aria-label="User account menu"
+                    className="flex items-center gap-2 p-1 rounded-full border border-border/80 hover:border-primary transition-colors bg-surface-elevated"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
+                      <FaUser />
+                    </div>
+                  </button>
+
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-48 py-2 bg-surface-elevated border border-border rounded-lg shadow-elevated z-50 animate-in fade-in duration-fast">
+                      <div className="px-3 py-1.5 border-b border-border/60">
+                        <p className="text-xs font-semibold text-foreground">
+                          Account Menu
+                        </p>
+                        <p className="text-[11px] text-foreground-muted">
+                          Signed In
+                        </p>
+                      </div>
+
+                      <div className="py-1">
+                        <Link
+                          href="/admin"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface"
+                        >
+                          <FaThLarge /> Dashboard
+                        </Link>
+                      </div>
+
+                      <div className="border-t border-border/60 pt-1">
+                        <button
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            setShowLogoutModal(true);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 text-left font-medium"
+                        >
+                          <FaSignOutAlt /> Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Toggle Button */}
+            <div className="md:hidden">
+              <IconButton
+                icon={isMobileOpen ? <FaTimes /> : <FaBars />}
+                aria-label={isMobileOpen ? 'Close menu' : 'Open navigation menu'}
+                aria-expanded={isMobileOpen}
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileOpen(!isMobileOpen)}
+              />
+            </div>
+          </div>
+        </Container>
+      </header>
+
+      {/* Mobile Drawer Overlay */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-background/95 backdrop-blur-xl animate-in fade-in duration-fast">
+          {/* Mobile Drawer Header */}
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border/50">
+            <Link
+              href="/"
+              onClick={() => setIsMobileOpen(false)}
+              className="flex items-center gap-2"
+            >
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <FaFilm className="text-white text-base" />
+              </div>
+              <span className="text-xl font-black tracking-wider text-foreground">
+                MOY<span className="text-primary">BD</span>
+              </span>
+            </Link>
+            <IconButton
+              icon={<FaTimes />}
+              aria-label="Close menu"
+              variant="ghost"
+              size="md"
+              onClick={() => setIsMobileOpen(false)}
+            />
+          </div>
+
+          {/* Mobile Drawer Links */}
+          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+            <nav className="space-y-1">
+              <div className="text-xs font-semibold text-foreground-muted tracking-wider uppercase mb-2">
+                Navigation
+              </div>
+              {NAV_LINKS.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsMobileOpen(false)}
+                    className={`block px-3 py-2.5 rounded-lg text-base font-semibold transition-colors ${
+                      isActive
+                        ? 'bg-primary text-white font-bold'
+                        : 'text-foreground-secondary hover:bg-surface hover:text-foreground'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Mobile Categories */}
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-foreground-muted tracking-wider uppercase">
+                Categories
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {CATEGORIES.map((cat) => {
+                  const isCatActive = pathname === cat.href;
+                  return (
+                    <Link
+                      key={cat.href}
+                      href={cat.href}
+                      onClick={() => setIsMobileOpen(false)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium border text-center transition-colors ${
+                        isCatActive
+                          ? 'bg-primary/20 border-primary text-primary font-semibold'
+                          : 'bg-surface/60 border-border/50 text-foreground-secondary hover:text-foreground'
+                      }`}
+                    >
+                      {cat.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mobile Auth Button */}
+            <div className="pt-4 border-t border-border/50">
+              {!isLoggedIn ? (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="block w-full"
+                >
+                  <Button variant="primary" size="lg" fullWidth>
+                    Sign In
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="danger"
+                  size="lg"
+                  fullWidth
+                  iconLeft={<FaSignOutAlt />}
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    setShowLogoutModal(true);
+                  }}
+                >
+                  Sign Out
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}
+
       {/* Logout Confirmation Modal */}
-      {showModal && (
-        <div className="fixed inset-0 p-4 flex flex-wrap justify-center items-center w-full h-full z-[1000] before:fixed before:inset-0 before:w-full before:h-full before:bg-[rgba(0,0,0,0.5)] overflow-auto font-[sans-serif]">
-          <div className="relative w-full max-w-md p-6 bg-white shadow-lg rounded-xl">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              onClick={handleCancelLogout}
-              className="w-3.5 cursor-pointer shrink-0 fill-gray-400 hover:fill-red-500 float-right"
-              viewBox="0 0 320.591 320.591"
-            >
-              <path
-                d="M30.391 318.583a30.37 30.37 0 0 1-21.56-7.288c-11.774-11.844-11.774-30.973 0-42.817L266.643 10.665c12.246-11.459 31.462-10.822 42.921 1.424 10.362 11.074 10.966 28.095 1.414 39.875L51.647 311.295a30.366 30.366 0 0 1-21.256 7.288z"
-                data-original="#000000"
-              ></path>
-              <path
-                d="M287.9 318.583a30.37 30.37 0 0 1-21.257-8.806L8.83 51.963C-2.078 39.225-.595 20.055 12.143 9.146c11.369-9.736 28.136-9.736 39.504 0l259.331 257.813c12.243 11.462 12.876 30.679 1.414 42.922-.456.487-.927.958-1.414 1.414a30.368 30.368 0 0 1-23.078 7.288z"
-                data-original="#000000"
-              ></path>
-            </svg>
-
-            <div className="my-8 text-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="inline w-14 fill-red-500"
-                viewBox="0 0 286.054 286.054"
-              >
-                <path
-                  fill="#e2574c"
-                  d="M143.027 0C64.04 0 0 64.04 0 143.027c0 78.996 64.04 143.027 143.027 143.027 78.996 0 143.027-64.022 143.027-143.027C286.054 64.04 222.022 0 143.027 0zm0 259.236c-64.183 0-116.209-52.026-116.209-116.209S78.844 26.818 143.027 26.818s116.209 52.026 116.209 116.209-52.026 116.209-116.209 116.209zm.009-196.51c-10.244 0-17.995 5.346-17.995 13.981v79.201c0 8.644 7.75 13.972 17.995 13.972 9.994 0 17.995-5.551 17.995-13.972V76.707c-.001-8.43-8.001-13.981-17.995-13.981zm0 124.997c-9.842 0-17.852 8.01-17.852 17.86 0 9.833 8.01 17.843 17.852 17.843s17.843-8.01 17.843-17.843c-.001-9.851-8.001-17.86-17.843-17.86z"
-                  data-original="#e2574c"
-                />
-              </svg>
-
-              <h4 className="mt-6 text-lg font-semibold text-gray-800">
-                Are you sure you want to logout?
-              </h4>
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay/80 backdrop-blur-sm animate-in fade-in duration-fast">
+          <div className="w-full max-w-sm p-6 bg-surface-elevated border border-border rounded-xl shadow-modal text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-error/10 text-error mx-auto flex items-center justify-center">
+              <FaExclamationTriangle className="text-xl" />
             </div>
 
-            <div className="flex gap-4 max-sm:flex-col">
-              <button
-                type="button"
-                onClick={handleCancelLogout}
-                className="px-5 py-2.5 rounded-lg w-full tracking-wide text-gray-800 text-sm border-none outline-none bg-gray-200 hover:bg-gray-300"
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-foreground">
+                Sign Out Confirmation
+              </h3>
+              <p className="text-xs text-foreground-muted">
+                Are you sure you want to sign out of your MOYBD account?
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant="secondary"
+                size="md"
+                fullWidth
+                onClick={() => setShowLogoutModal(false)}
               >
                 Cancel
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="danger"
+                size="md"
+                fullWidth
                 onClick={handleLogout}
-                className="px-5 py-2.5 rounded-lg w-full tracking-wide text-white text-sm border-none outline-none bg-red-500 hover:bg-red-600"
               >
-                Yes, Logout
-              </button>
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
       )}
     </>
   );
-};
-
-export default Navbar;
+}
