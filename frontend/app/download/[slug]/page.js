@@ -24,6 +24,8 @@ import {
   FaHdd,
   FaShieldAlt,
   FaFilm as FaMovie,
+  FaTv,
+  FaFolderArchive,
 } from 'react-icons/fa';
 import { isInWatchlist, toggleWatchlist } from '@/app/libs/watchlist';
 
@@ -121,6 +123,11 @@ export default function MovieDetails() {
     );
   }
 
+  const isSeries =
+    movie.titlecategory === 'Series' ||
+    movie.titlecategory === 'Shows' ||
+    (Array.isArray(movie.episodes) && movie.episodes.length > 0);
+
   const genres = Array.isArray(movie.genre)
     ? movie.genre
     : typeof movie.genre === 'string'
@@ -128,8 +135,14 @@ export default function MovieDetails() {
     : [];
 
   const downloadLinks = movie.downloadlink || {};
-  const hasDownloadObject =
+  const hasMovieDownloadObject =
     typeof downloadLinks === 'object' && Object.keys(downloadLinks).length > 0;
+
+  const zipLinks = movie.zipDownloadLink || {};
+  const hasZipObject =
+    typeof zipLinks === 'object' && Object.values(zipLinks).some(Boolean);
+
+  const episodesList = Array.isArray(movie.episodes) ? movie.episodes : [];
 
   return (
     <PublicLayout>
@@ -166,14 +179,12 @@ export default function MovieDetails() {
             {/* Title & Key Metadata */}
             <div className="space-y-4 text-center md:text-left text-foreground flex-1">
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                <Badge variant="new" size="xs">
+                  {isSeries ? 'TV SERIES' : 'FULL MOVIE'}
+                </Badge>
                 {movie.quality && (
                   <Badge variant="quality" size="xs">
                     {movie.quality}
-                  </Badge>
-                )}
-                {movie.category && (
-                  <Badge variant="subtle" size="xs">
-                    {movie.category}
                   </Badge>
                 )}
                 {genres.map((g, idx) => (
@@ -234,7 +245,7 @@ export default function MovieDetails() {
                   iconLeft={<FaDownload className="text-xs" />}
                   onClick={() => scrollToSection('download-section')}
                 >
-                  Download
+                  {isSeries ? 'Episodes & Downloads' : 'Download Options'}
                 </Button>
 
                 <Button
@@ -294,54 +305,169 @@ export default function MovieDetails() {
               </div>
             )}
 
-            {/* Download Links Section */}
-            <div id="download-section" className="bg-surface rounded-2xl p-6 border border-purple-900/40 space-y-4 shadow-card">
-              <h2 className="text-xl font-bold text-foreground border-b border-purple-900/30 pb-3 flex items-center gap-2">
-                <FaDownload className="text-primary" /> Fast Download Links
-              </h2>
+            {/* DOWNLOAD SECTION (SERIES VS MOVIE DUAL SYSTEM) */}
+            <div id="download-section" className="bg-surface rounded-2xl p-6 border border-purple-900/40 space-y-6 shadow-card">
+              <div className="border-b border-purple-900/30 pb-3 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  {isSeries ? <FaTv className="text-primary" /> : <FaDownload className="text-primary" />}
+                  <span>{isSeries ? 'Series Episodes & Batch Downloads' : 'Movie Quality Download Links'}</span>
+                </h2>
+                <Badge variant="quality" size="xs">
+                  {isSeries ? `${episodesList.length || 'Multi'} Episodes` : 'Single Movie'}
+                </Badge>
+              </div>
 
-              {hasDownloadObject ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Object.entries(downloadLinks).map(([resolution, url]) => {
-                    if (!url) return null;
-                    return (
-                      <a
-                        key={resolution}
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between p-3.5 bg-purple-950/40 hover:bg-primary/20 border border-purple-900/40 hover:border-primary/60 rounded-xl transition-all group"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <FaDownload className="text-primary text-sm group-hover:scale-110 transition-transform" />
-                          <span className="text-sm font-bold text-foreground uppercase">
-                            Download {resolution}
-                          </span>
-                        </div>
-                        <Badge variant="quality" size="xs">
-                          {resolution.toUpperCase()}
-                        </Badge>
-                      </a>
-                    );
-                  })}
+              {/* SERIES SYSTEM */}
+              {isSeries ? (
+                <div className="space-y-6">
+                  {/* Full Season Zip Batch Downloads */}
+                  {hasZipObject && (
+                    <div className="bg-purple-950/40 p-4 rounded-xl border border-purple-900/40 space-y-3">
+                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2 uppercase tracking-wide">
+                        <FaFolderArchive className="text-primary" /> Full Season Batch Zip Download
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {Object.entries(zipLinks).map(([res, url]) => {
+                          if (!url) return null;
+                          return (
+                            <a
+                              key={res}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center justify-between p-3 bg-purple-900/30 hover:bg-primary/20 border border-purple-900/40 hover:border-primary/60 rounded-xl transition-all font-bold text-xs"
+                            >
+                              <span>Full Season Zip ({res.toUpperCase()})</span>
+                              <FaDownload className="text-primary" />
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Episodes List Download Grid */}
+                  {episodesList.length > 0 ? (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                        <span>Individual Episodes ({episodesList.length})</span>
+                      </h3>
+                      <div className="grid grid-cols-1 gap-3">
+                        {episodesList.map((ep, idx) => (
+                          <div
+                            key={idx}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-background border border-purple-900/40 rounded-xl hover:border-primary/40 transition-all"
+                          >
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-sm text-foreground">
+                                {ep.episodeNumber || `Episode ${idx + 1}`}
+                              </span>
+                              {ep.title && (
+                                <p className="text-xs text-foreground-muted">
+                                  {ep.title}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                              {ep.downloadlink &&
+                                Object.entries(ep.downloadlink).map(([res, link]) => {
+                                  if (!link) return null;
+                                  return (
+                                    <a
+                                      key={res}
+                                      href={link}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="px-3 py-1.5 bg-purple-950/80 hover:bg-primary text-white border border-primary/50 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-subtle"
+                                    >
+                                      <FaDownload className="text-[10px]" />
+                                      <span>{res.toUpperCase()}</span>
+                                    </a>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Fallback standard links if episodes list is empty for Series */
+                    hasMovieDownloadObject && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {Object.entries(downloadLinks).map(([resolution, url]) => {
+                          if (!url) return null;
+                          return (
+                            <a
+                              key={resolution}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center justify-between p-3.5 bg-purple-950/40 hover:bg-primary/20 border border-purple-900/40 hover:border-primary/60 rounded-xl transition-all group"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <FaDownload className="text-primary text-sm group-hover:scale-110 transition-transform" />
+                                <span className="text-sm font-bold text-foreground uppercase">
+                                  Download Pack {resolution}
+                                </span>
+                              </div>
+                              <Badge variant="quality" size="xs">
+                                {resolution.toUpperCase()}
+                              </Badge>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    )
+                  )}
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                    iconLeft={<FaDownload className="text-sm" />}
-                    onClick={() => {
-                      if (movie.watchonline) {
-                        window.location.href = `http://127.0.0.1:6969/get_movies?watchonline=${movie.watchonline}`;
-                      } else {
-                        toast.error('Download link currently unavailable.');
-                      }
-                    }}
-                  >
-                    Direct High-Speed Download
-                  </Button>
+                /* MOVIE SYSTEM */
+                <div className="space-y-4">
+                  {hasMovieDownloadObject ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(downloadLinks).map(([resolution, url]) => {
+                        if (!url) return null;
+                        return (
+                          <a
+                            key={resolution}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-between p-3.5 bg-purple-950/40 hover:bg-primary/20 border border-purple-900/40 hover:border-primary/60 rounded-xl transition-all group"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <FaDownload className="text-primary text-sm group-hover:scale-110 transition-transform" />
+                              <span className="text-sm font-bold text-foreground uppercase">
+                                Download {resolution}
+                              </span>
+                            </div>
+                            <Badge variant="quality" size="xs">
+                              {resolution.toUpperCase()}
+                            </Badge>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        className="w-full"
+                        iconLeft={<FaDownload className="text-sm" />}
+                        onClick={() => {
+                          if (movie.watchonline) {
+                            window.location.href = `http://127.0.0.1:6969/get_movies?watchonline=${movie.watchonline}`;
+                          } else {
+                            toast.error('Download link currently unavailable.');
+                          }
+                        }}
+                      >
+                        Direct High-Speed Download
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -362,6 +488,15 @@ export default function MovieDetails() {
               </h2>
 
               <div className="space-y-3.5 text-xs sm:text-sm">
+                <div className="flex items-center justify-between gap-2 text-foreground-secondary">
+                  <span className="text-foreground-muted font-medium flex items-center gap-1.5">
+                    <FaTv className="text-xs text-primary" /> Type:
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {isSeries ? 'TV Series / Show' : 'Feature Movie'}
+                  </span>
+                </div>
+
                 <div className="flex items-start justify-between gap-2 text-foreground-secondary">
                   <span className="text-foreground-muted font-medium flex items-center gap-1.5">
                     <FaMovie className="text-xs text-primary" /> Genres:
@@ -403,7 +538,7 @@ export default function MovieDetails() {
                     <FaShieldAlt className="text-xs text-primary" /> Quality:
                   </span>
                   <span className="font-semibold text-foreground">
-                    {movie.quality || 'HD Web-DL'}
+                    {movie.quality || 'HD WEB-DL'}
                   </span>
                 </div>
               </div>

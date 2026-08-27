@@ -26,6 +26,23 @@ const MovieSchema = new mongoose.Schema(
       "1080p": { type: String },
       "4k": { type: String },
     },
+    episodes: [
+      {
+        episodeNumber: { type: String },
+        title: { type: String },
+        downloadlink: {
+          "480p": { type: String },
+          "720p": { type: String },
+          "1080p": { type: String },
+        },
+        watchonline: { type: String },
+      },
+    ],
+    zipDownloadLink: {
+      "480p": { type: String },
+      "720p": { type: String },
+      "1080p": { type: String },
+    },
     status: { type: String },
     comments: [
       {
@@ -33,7 +50,8 @@ const MovieSchema = new mongoose.Schema(
         ref: "comment",
       },
     ],
-  }
+  },
+  { strict: false }
 );
 
 const Movie = mongoose.model("movie", MovieSchema);

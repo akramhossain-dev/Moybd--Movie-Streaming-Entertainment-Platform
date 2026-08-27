@@ -1,41 +1,46 @@
 import Movie from "../models/Post.js";
 
-
 const NewPost = async (req, res) => {
     try {
-        const { title, slug, bgposter, smposter, titlecategory, description, rating, duration, year, genre, language, subtitle, size, quality, youtubelink, category, watchonline, downloadlink, status } = req.body;
+        const {
+            title, slug, bgposter, smposter, titlecategory, description,
+            rating, duration, year, genre, language, subtitle, size,
+            quality, youtubelink, category, watchonline, downloadlink,
+            episodes, zipDownloadLink, status
+        } = req.body;
 
         const newMovie = new Movie({
-            title: title,
-            slug: slug,
-            bgposter: bgposter,
-            smposter: smposter,
-            titlecategory: titlecategory,
-            description: description,
-            rating: rating,
-            duration: duration,
-            year: year,
-            genre: genre,
-            language: language,
-            subtitle: subtitle,
-            size: size,
-            quality: quality,
-            youtubelink: youtubelink,
-            category: category,
-            watchonline: watchonline,
-            downloadlink: downloadlink,
-            status: status
+            title,
+            slug,
+            bgposter,
+            smposter,
+            titlecategory,
+            description,
+            rating,
+            duration,
+            year,
+            genre,
+            language,
+            subtitle,
+            size,
+            quality,
+            youtubelink,
+            category,
+            watchonline,
+            downloadlink,
+            episodes: episodes || [],
+            zipDownloadLink: zipDownloadLink || {},
+            status
         });
 
         await newMovie.save();
 
-        res.status(200).json({ success: true, message: 'Movie posted successfully', movie: newMovie });
+        res.status(200).json({ success: true, message: 'Movie/Series posted successfully', movie: newMovie });
 
     } catch (error) {
-        console.error('Error during post movie', error);
-        res.status(500).json({ error: 'Error during post movie' });
+        console.error('Error during post movie/series:', error);
+        res.status(500).json({ error: 'Error during post movie/series' });
     }
-
 };
 
 const GetPost = async (req, res) => {
@@ -51,7 +56,12 @@ const GetPost = async (req, res) => {
 
 const UpdatePost = async (req, res) => {
     try {
-        const { title, slug, bgposter, smposter, titlecategory, description, rating, duration, year, genre, language, subtitle, size, quality, youtubelink, category, watchonline, downloadlink, status } = req.body;
+        const {
+            title, slug, bgposter, smposter, titlecategory, description,
+            rating, duration, year, genre, language, subtitle, size,
+            quality, youtubelink, category, watchonline, downloadlink,
+            episodes, zipDownloadLink, status
+        } = req.body;
 
         const movie = await Movie.findById(req.params.id);
 
@@ -78,12 +88,14 @@ const UpdatePost = async (req, res) => {
             category,
             watchonline,
             downloadlink,
+            episodes: episodes || [],
+            zipDownloadLink: zipDownloadLink || {},
             status
         });
 
         await movie.save();
 
-        res.status(200).json({ success: true, message: 'Movie updated successfully', movie });
+        res.status(200).json({ success: true, message: 'Movie/Series updated successfully', movie });
     } catch (error) {
         console.error('Error during update movie', error);
         res.status(500).json({ success: false, message: 'Server error during movie update' });
@@ -105,8 +117,7 @@ const deletePost = async (req, res) => {
     catch(error){
         console.error('Error during delete movie', error);
         res.status(500).json({ error: 'Error during delete movie' });
-
-};
+    }
 };
 
 export { NewPost, GetPost, UpdatePost, deletePost };
