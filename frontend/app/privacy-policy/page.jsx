@@ -77,11 +77,8 @@ export default function PrivacyPolicyPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
 
         <Container className="relative z-10 text-center space-y-4 max-w-3xl mx-auto">
-          <Badge variant="new" size="md">
-            LEGAL & PRIVACY COMPLIANCE
-          </Badge>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-            Privacy Policy & Data Security
+            Privacy Policy &amp; Data Security
           </h1>
           <p className="text-sm sm:text-base text-foreground-secondary leading-relaxed">
             Your trust matters to us. Learn how we safeguard your data, enforce AES-256-GCM link security, and protect your privacy. Last updated: August 2026.

@@ -124,11 +124,18 @@ export default function Navbar() {
     }
     const timer = setTimeout(() => {
       const query = searchQuery.toLowerCase();
-      const results = movies.filter(
-        (m) =>
-          m.title?.toLowerCase().includes(query) ||
-          m.genre?.toLowerCase().includes(query)
-      );
+      const results = movies.filter((m) => {
+        const titleStr = typeof m.title === 'string' ? m.title : '';
+        const genreStr = Array.isArray(m.genre)
+          ? m.genre.join(' ')
+          : typeof m.genre === 'string'
+          ? m.genre
+          : '';
+        return (
+          titleStr.toLowerCase().includes(query) ||
+          genreStr.toLowerCase().includes(query)
+        );
+      });
       setFilteredMovies(results);
     }, 250);
     return () => clearTimeout(timer);

@@ -6,7 +6,7 @@ import Skeleton from './Skeleton';
  */
 export default function MovieCardSkeleton({ className = '' }) {
   return (
-    <div className={`flex flex-col w-full bg-card rounded-lg overflow-hidden border border-border/30 ${className}`}>
+    <div className={`flex flex-col w-full bg-card rounded-xl overflow-hidden border border-purple-900/20 ${className}`}>
       {/* 2:3 Poster Skeleton */}
       <div className="w-full aspect-[2/3] relative">
         <Skeleton className="w-full h-full rounded-none" />

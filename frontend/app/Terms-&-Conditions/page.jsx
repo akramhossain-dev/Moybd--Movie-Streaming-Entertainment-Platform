@@ -70,11 +70,8 @@ export default function TermsAndConditionsPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
 
         <Container className="relative z-10 text-center space-y-4 max-w-3xl mx-auto">
-          <Badge variant="subtle" size="md">
-            TERMS OF SERVICE
-          </Badge>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-            Terms & Conditions
+            Terms &amp; Conditions
           </h1>
           <p className="text-sm sm:text-base text-foreground-secondary leading-relaxed">
             Please read these terms and conditions carefully before using the Moybd platform. Last updated: August 2026.

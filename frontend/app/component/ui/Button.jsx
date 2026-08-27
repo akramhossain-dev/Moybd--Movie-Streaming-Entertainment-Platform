@@ -24,11 +24,11 @@ export default function Button({
     primary:
       'bg-primary hover:bg-primary-hover active:bg-primary-active text-white shadow-glow hover:scale-[1.02]',
     secondary:
-      'bg-purple-950/80 hover:bg-primary/20 active:bg-purple-900 text-white border border-primary/50 shadow-subtle hover:border-primary',
+      'bg-purple-950/80 hover:bg-primary/20 active:bg-purple-900 text-white border border-primary/30 shadow-subtle hover:border-primary',
     ghost:
       'bg-purple-950/40 hover:bg-purple-900/60 active:bg-purple-900 text-purple-200 hover:text-white',
     outline:
-      'bg-purple-950/50 border border-primary/60 hover:bg-primary hover:border-primary text-white',
+      'bg-purple-950/50 border border-primary/30 hover:bg-primary hover:border-primary text-white',
     danger:
       'bg-error hover:bg-red-600 text-white shadow-subtle',
   };

@@ -91,14 +91,9 @@ function Genre() {
 
   return (
     <Container className="py-10 space-y-8">
-      {/* Section Header with Radial Glow Backdrop */}
-      <div className="relative bg-surface rounded-3xl p-6 sm:p-10 border border-purple-900/50 shadow-elevated overflow-hidden text-center space-y-6">
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Section Header Container */}
+      <div className="relative bg-surface rounded-2xl p-6 sm:p-8 border border-purple-900/40 shadow-card overflow-hidden text-center space-y-6">
         <div className="relative z-10 space-y-2 max-w-2xl mx-auto">
-          <Badge variant="new" size="xs">
-            CATEGORIES & MOODS
-          </Badge>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             Explore by Genre
           </h2>
@@ -108,7 +103,7 @@ function Genre() {
         </div>
 
         {/* Genre Pill Pills with Icons & Glow */}
-        <div className="relative z-10 flex flex-wrap justify-center gap-2 sm:gap-3">
+        <div className="relative z-10 flex flex-wrap justify-center gap-2 sm:gap-2.5">
           {Object.keys(genreDetails).map((key) => {
             const item = genreDetails[key];
             const isActive = selectedGenre === key;
@@ -117,9 +112,9 @@ function Genre() {
                 key={key}
                 type="button"
                 onClick={() => handleGenreClick(key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all duration-normal select-none cursor-pointer border ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold tracking-wide transition-all duration-200 select-none cursor-pointer border ${
                   isActive
-                    ? 'bg-primary border-primary text-white shadow-glow scale-105'
+                    ? 'bg-primary border-primary text-white shadow-glow'
                     : 'bg-purple-950/70 border-primary/40 text-purple-100 hover:text-white hover:bg-primary/30 hover:border-primary'
                 }`}
               >

@@ -7,9 +7,8 @@ import { FaPlay, FaStar, FaPlus, FaCheck } from 'react-icons/fa';
 import { isInWatchlist, toggleWatchlist } from '@/app/libs/watchlist';
 
 /**
- * Reusable cinematic MovieCard component.
- * Supports poster, title, year, IMDb rating, quality badge, play overlay, and mobile tap.
- * Compatible with existing project props (slug, title, smposter, rating, year).
+ * Production-Grade Cinematic MovieCard Component.
+ * Poster-first hierarchy, crisp rounded-xl radius, restrained hover, and clear metadata.
  */
 export default function MovieCard({
   _id,
@@ -84,7 +83,7 @@ export default function MovieCard({
         }
       }}
       aria-label={`View ${title || 'movie'} details`}
-      className={`group relative flex flex-col w-full bg-card rounded-2xl overflow-hidden border border-purple-900/30 hover:border-primary/50 transition-all duration-normal hover:shadow-glow cursor-pointer outline-none ${className}`}
+      className={`group relative flex flex-col w-full bg-card rounded-xl overflow-hidden border border-purple-900/30 hover:border-primary/60 transition-all duration-normal cursor-pointer outline-none ${className}`}
     >
       {/* Poster Aspect Ratio Container (2:3 aspect ratio) */}
       <div className="relative w-full aspect-[2/3] bg-surface-elevated overflow-hidden">
@@ -93,39 +92,43 @@ export default function MovieCard({
           alt={title ? `${title} Poster` : 'Movie Poster'}
           onError={() => setImageError(true)}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-smooth group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-normal" />
+        {/* Ambient Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
 
         {/* Top Badges */}
-        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10">
-          {quality && <Badge variant="quality" size="xs">{quality}</Badge>}
-          {rating && (
-            <Badge variant="rating" size="xs" icon={<FaStar className="text-rating text-[10px]" />}>
+        <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none z-10">
+          {quality ? (
+            <Badge variant="quality" size="xs" className="shadow-subtle">
+              {quality}
+            </Badge>
+          ) : <div />}
+          {rating ? (
+            <Badge variant="rating" size="xs" icon={<FaStar className="text-rating text-[10px]" />} className="shadow-subtle">
               {rating}
             </Badge>
-          )}
+          ) : null}
         </div>
 
-        {/* Hover Action Overlay (Desktop & Mobile) */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-normal z-20 bg-overlay/50 backdrop-blur-[2px]">
-          <div className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white flex items-center justify-center shadow-glow transform scale-90 group-hover:scale-100 transition-transform duration-normal">
-            <FaPlay className="ml-1 text-sm" />
+        {/* Hover Action Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 bg-background/60">
+          <div className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-glow transform scale-90 group-hover:scale-100 transition-transform">
+            <FaPlay className="ml-0.5 text-xs" />
           </div>
           
           <button
             onClick={handleWatchlist}
             aria-label={inWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-pill text-xs font-bold transition-all border ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
               inWatchlist
                 ? 'bg-success/20 text-success border-success/40'
                 : 'bg-purple-950/90 text-white border-primary/50 hover:bg-primary'
             }`}
           >
             {inWatchlist ? <FaCheck className="text-success text-[10px]" /> : <FaPlus className="text-[10px]" />}
-            <span>{inWatchlist ? 'Added' : 'Watchlist'}</span>
+            <span>{inWatchlist ? 'In Watchlist' : 'Watchlist'}</span>
           </button>
         </div>
       </div>
@@ -138,7 +141,7 @@ export default function MovieCard({
         
         <div className="flex items-center justify-between text-[11px] text-foreground-muted">
           <span>{year || 'N/A'}</span>
-          {formattedGenre && <span className="line-clamp-1 max-w-[60%] font-medium">{formattedGenre}</span>}
+          {formattedGenre && <span className="line-clamp-1 max-w-[65%] font-medium">{formattedGenre}</span>}
         </div>
       </div>
     </div>

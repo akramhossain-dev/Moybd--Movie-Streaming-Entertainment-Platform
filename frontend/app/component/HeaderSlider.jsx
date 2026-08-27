@@ -99,13 +99,6 @@ export default function HeaderSlider() {
 
   if (movies.length === 0) return null;
 
-  const currentMovie = movies[currentSlide];
-  const genres = Array.isArray(currentMovie.genre)
-    ? currentMovie.genre
-    : typeof currentMovie.genre === 'string'
-    ? currentMovie.genre.split(',').map((g) => g.trim())
-    : [];
-
   return (
     <section className="relative w-full h-[65vh] sm:h-[75vh] max-h-[750px] min-h-[480px] overflow-hidden bg-background">
       {movies.map((movie, index) => {
@@ -113,11 +106,16 @@ export default function HeaderSlider() {
         const isSaved = !!watchlistState[movie._id];
         const hasBgError = !!imageErrorMap[`bg_${movie._id}`];
         const hasSmError = !!imageErrorMap[`sm_${movie._id}`];
+        const genres = Array.isArray(movie.genre)
+          ? movie.genre
+          : typeof movie.genre === 'string'
+          ? movie.genre.split(',').map((g) => g.trim())
+          : [];
 
         return (
           <div
             key={movie._id || index}
-            className={`absolute inset-0 transition-opacity duration-hero ease-in-out ${
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
               isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
             }`}
           >
@@ -133,7 +131,7 @@ export default function HeaderSlider() {
                 onError={() =>
                   setImageErrorMap((prev) => ({ ...prev, [`bg_${movie._id}`]: true }))
                 }
-                className="w-full h-full object-cover object-center scale-105 animate-in fade-in duration-1000"
+                className="w-full h-full object-cover object-center scale-105"
               />
 
               {/* Multi-stage cinematic gradient overlays */}
@@ -145,7 +143,7 @@ export default function HeaderSlider() {
             <div className="absolute inset-0 flex items-end pb-12 sm:pb-16 z-20">
               <Container className="flex flex-col sm:flex-row sm:items-end gap-6 w-full">
                 {/* Poster Thumbnail (Desktop) */}
-                <div className="hidden sm:block w-36 sm:w-44 aspect-[2/3] shrink-0 rounded-2xl overflow-hidden shadow-modal border border-purple-900/40 group">
+                <div className="hidden sm:block w-36 sm:w-44 aspect-[2/3] shrink-0 rounded-xl overflow-hidden shadow-modal border border-purple-900/40 group">
                   <img
                     src={
                       hasSmError
@@ -156,7 +154,7 @@ export default function HeaderSlider() {
                     onError={() =>
                       setImageErrorMap((prev) => ({ ...prev, [`sm_${movie._id}`]: true }))
                     }
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
 
@@ -168,7 +166,7 @@ export default function HeaderSlider() {
                       FEATURED
                     </Badge>
                     <Badge variant="quality" size="xs">
-                      4K ULTRA HD
+                      {movie.quality || '4K ULTRA HD'}
                     </Badge>
                     {genres.slice(0, 3).map((g, idx) => (
                       <Badge key={idx} variant="genre" size="xs">
@@ -241,9 +239,9 @@ export default function HeaderSlider() {
               key={idx}
               onClick={() => setCurrentSlide(idx)}
               aria-label={`Go to slide ${idx + 1}`}
-              className={`h-1.5 rounded-pill transition-all duration-normal ${
+              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 idx === currentSlide
-                  ? 'w-8 bg-primary shadow-glow'
+                  ? 'w-8 bg-primary'
                   : 'w-2.5 bg-surface-elevated hover:bg-primary/50'
               }`}
             />

@@ -16,7 +16,6 @@ import {
   FaCheckCircle,
   FaTv,
   FaGlobe,
-  FaHeart,
   FaEnvelope,
   FaPlayCircle,
   FaLock,
@@ -56,17 +55,10 @@ export default function AboutPage() {
   return (
     <PublicLayout>
       {/* 1. Cinematic Hero Header */}
-      <section className="relative w-full py-20 sm:py-28 bg-background border-b border-purple-900/40 overflow-hidden">
-        {/* Glow Overlay */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
+      <section className="relative w-full py-16 sm:py-24 bg-background border-b border-purple-900/40 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/10 rounded-full blur-[140px] pointer-events-none" />
 
         <Container className="relative z-10 text-center space-y-6 max-w-4xl mx-auto">
-          <div className="flex items-center justify-center gap-2">
-            <Badge variant="new" size="md">
-              MOYBD PLATFORM OVERVIEW
-            </Badge>
-          </div>
-
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-foreground leading-tight">
             Redefining Next-Gen <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-purple-400 via-primary to-amber-300 bg-clip-text text-transparent">
@@ -78,7 +70,7 @@ export default function AboutPage() {
             Moybd is a modern entertainment platform crafted for film lovers. We bring high-speed downloads, crisp metadata, community reviews, and an ultra-sleek dark interface into one seamless hub.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <Link href="/movies">
               <Button
                 variant="primary"
@@ -101,13 +93,10 @@ export default function AboutPage() {
         </Container>
       </section>
 
-      <Container className="py-16 space-y-20">
+      <Container className="py-16 space-y-16">
         {/* 2. Platform Pillars Grid */}
-        <div className="space-y-10">
-          <div className="text-center space-y-3 max-w-xl mx-auto">
-            <Badge variant="subtle" size="xs">
-              WHY CHOOSE MOYBD
-            </Badge>
+        <div className="space-y-8">
+          <div className="text-center space-y-2 max-w-xl mx-auto">
             <h2 className="text-2xl sm:text-4xl font-bold text-foreground">
               Built for Ultimate Performance
             </h2>
@@ -120,9 +109,9 @@ export default function AboutPage() {
             {PLATFORM_PILLARS.map((pillar, idx) => (
               <div
                 key={idx}
-                className="bg-surface rounded-2xl p-6 sm:p-8 border border-purple-900/40 hover:border-primary/50 transition-all duration-normal space-y-4 shadow-card group"
+                className="bg-surface rounded-xl p-6 sm:p-8 border border-purple-900/40 hover:border-primary/50 transition-all duration-200 space-y-4 shadow-card group"
               >
-                <div className="w-12 h-12 rounded-xl bg-purple-950/80 border border-primary/40 flex items-center justify-center shadow-glow group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-xl bg-purple-950/80 border border-primary/40 flex items-center justify-center shadow-glow group-hover:scale-105 transition-transform">
                   {pillar.icon}
                 </div>
                 <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
@@ -137,7 +126,7 @@ export default function AboutPage() {
         </div>
 
         {/* 3. High-Density Categories Highlight */}
-        <div className="bg-surface rounded-3xl p-8 sm:p-12 border border-purple-900/40 space-y-8 shadow-card">
+        <div className="bg-surface rounded-2xl p-6 sm:p-10 border border-purple-900/40 space-y-8 shadow-card">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-purple-900/30 pb-6">
             <div className="space-y-1">
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
@@ -153,7 +142,7 @@ export default function AboutPage() {
             {GENRES_LIST.map((cat, idx) => (
               <div
                 key={idx}
-                className="bg-background/80 p-5 rounded-2xl border border-purple-900/30 flex items-center gap-4 hover:border-primary/50 transition-all"
+                className="bg-background/80 p-4 sm:p-5 rounded-xl border border-purple-900/30 flex items-center gap-4 hover:border-primary/50 transition-all"
               >
                 <div className="w-10 h-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
                   {cat.icon}
@@ -177,9 +166,9 @@ export default function AboutPage() {
           ].map((stat, idx) => (
             <div
               key={idx}
-              className="bg-surface rounded-2xl p-6 border border-purple-900/40 text-center space-y-1.5 shadow-card"
+              className="bg-surface rounded-xl p-5 sm:p-6 border border-purple-900/40 text-center space-y-1 shadow-card"
             >
-              <div className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-purple-400 to-primary bg-clip-text text-transparent">
+              <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-primary bg-clip-text text-transparent">
                 {stat.number}
               </div>
               <div className="text-xs sm:text-sm text-foreground-muted font-medium">
@@ -190,8 +179,8 @@ export default function AboutPage() {
         </div>
 
         {/* 5. Security & Privacy Commitment */}
-        <div className="bg-gradient-to-r from-purple-950/60 via-surface to-purple-950/60 rounded-3xl p-8 sm:p-10 border border-purple-900/40 text-center space-y-4 max-w-3xl mx-auto shadow-modal">
-          <div className="w-12 h-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center mx-auto border border-primary/40 shadow-glow">
+        <div className="bg-gradient-to-r from-purple-950/60 via-surface to-purple-950/60 rounded-2xl p-6 sm:p-10 border border-purple-900/40 text-center space-y-4 max-w-3xl mx-auto shadow-modal">
+          <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center mx-auto border border-primary/40 shadow-glow">
             <FaShieldAlt className="text-xl" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">

@@ -14,8 +14,8 @@
   --foreground-secondary: #c4b5fd;
   --foreground-muted: #94a3b8;
   
-  --border: rgba(124, 58, 237, 0.22);
-  --border-subtle: rgba(124, 58, 237, 0.10);
+  --border: rgba(124, 58, 237, 0.18);
+  --border-subtle: rgba(124, 58, 237, 0.08);
   
   --primary: #7c3aed;
   --primary-hover: #8b5cf6;
@@ -26,6 +26,10 @@
   --warning: #f59e0b;
   --error: #ef4444;
   --info: #3b82f6;
+}
+
+*, ::before, ::after {
+  border-color: rgba(124, 58, 237, 0.18);
 }
 
 body {
@@ -42,7 +46,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Skeleton shimmer animation */
+/* Dark Purple Skeleton shimmer animation - No white flash */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -55,9 +59,9 @@ body {
 .animate-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.08) 37%,
-    rgba(255, 255, 255, 0.03) 63%
+    rgba(23, 18, 43, 0.4) 25%,
+    rgba(124, 58, 237, 0.14) 37%,
+    rgba(23, 18, 43, 0.4) 63%
   );
   background-size: 200% 100%;
   animation: shimmer 1.8s infinite linear;

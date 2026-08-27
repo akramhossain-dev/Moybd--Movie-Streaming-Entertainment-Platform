@@ -95,9 +95,6 @@ export default function ContactPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
 
         <Container className="relative z-10 text-center space-y-4 max-w-3xl mx-auto">
-          <Badge variant="new" size="md">
-            HELP & SUPPORT DESK
-          </Badge>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
             Get in Touch with Moybd Team
           </h1>
