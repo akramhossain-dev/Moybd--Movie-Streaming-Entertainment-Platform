@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Container from './ui/Container';
+import Logo from './ui/Logo';
 import { FaFilm, FaFacebook, FaLinkedin, FaTwitter } from 'react-icons/fa';
 
 export default function Footer() {
@@ -14,14 +15,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand & Description Column */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2 group select-none">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-glow">
-                <FaFilm className="text-white text-base" />
-              </div>
-              <span className="text-2xl font-black tracking-wider text-foreground">
-                MOY<span className="text-primary">BD</span>
-              </span>
-            </Link>
+            <Logo size="md" />
 
             <p className="text-xs leading-relaxed text-foreground-muted">
               Your ultimate destination for streaming latest movies, tv series, reviews, and entertainment content in crisp HD and 4K quality.
@@ -141,6 +135,11 @@ export default function Footer() {
               <li>
                 <Link href="/Terms-&-Conditions" className="hover:text-primary transition-colors">
                   Terms &amp; Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/dmca" className="hover:text-primary transition-colors">
+                  DMCA Policy
                 </Link>
               </li>
             </ul>

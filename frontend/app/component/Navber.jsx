@@ -8,6 +8,7 @@ import Container from './ui/Container';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 import Badge from './ui/Badge';
+import Logo from './ui/Logo';
 import {
   FaSearch,
   FaUser,
@@ -221,17 +222,7 @@ export default function Navbar() {
       >
         <Container className="flex items-center justify-between gap-4">
           {/* Brand Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 group select-none outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
-          >
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-glow group-hover:scale-105 transition-transform duration-fast">
-              <FaFilm className="text-white text-base" />
-            </div>
-            <span className="text-xl sm:text-2xl font-black tracking-wider text-foreground">
-              MOY<span className="text-primary">BD</span>
-            </span>
-          </Link>
+          <Logo size="md" />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 lg:gap-2">

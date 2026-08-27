@@ -1,9 +1,39 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Movie from './models/Post.js';
 import connectDB from './libs/db.js';
+import { encryptUrl } from './libs/crypto.js';
 
 dotenv.config();
+
+const sampleVideoLinks = {
+  movie1: {
+    '360p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    '480p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoywatches.mp4',
+    '4k': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+  },
+  movie2: {
+    '480p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+    '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
+    '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+    '4k': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+  },
+  movie3: {
+    '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4',
+    '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    '4k': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  },
+};
+
+function encryptDownloadObject(obj) {
+  if (!obj) return {};
+  const res = {};
+  for (const [key, val] of Object.entries(obj)) {
+    res[key] = val ? encryptUrl(val) : '';
+  }
+  return res;
+}
 
 const mockMovies = [
   {
@@ -23,12 +53,8 @@ const mockMovies = [
     quality: '4K Ultra HD',
     youtubelink: 'https://www.youtube.com/watch?v=Way9Dexny3w',
     category: 'Hollywood',
-    watchonline: 'https://example.com/watch/dune-2',
-    downloadlink: {
-      '720p': 'https://example.com/download/dune2-720p',
-      '1080p': 'https://example.com/download/dune2-1080p',
-      '4k': 'https://example.com/download/dune2-4k',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie1),
     status: 'Publish',
   },
   {
@@ -48,11 +74,8 @@ const mockMovies = [
     quality: '1080p Web-DL',
     youtubelink: 'https://www.youtube.com/watch?v=cqGjhVJWtEg',
     category: 'Marvel_Studio',
-    watchonline: 'https://example.com/watch/spider-verse',
-    downloadlink: {
-      '720p': 'https://example.com/download/spiderman-720p',
-      '1080p': 'https://example.com/download/spiderman-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie2),
     status: 'Publish',
   },
   {
@@ -72,11 +95,8 @@ const mockMovies = [
     quality: '1080p BluRay',
     youtubelink: 'https://www.youtube.com/watch?v=uYPbbksJxIg',
     category: 'Hollywood',
-    watchonline: 'https://example.com/watch/oppenheimer',
-    downloadlink: {
-      '720p': 'https://example.com/download/oppenheimer-720p',
-      '1080p': 'https://example.com/download/oppenheimer-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie3),
     status: 'Publish',
   },
   {
@@ -96,11 +116,8 @@ const mockMovies = [
     quality: '1080p BluRay',
     youtubelink: 'https://www.youtube.com/watch?v=zSWdZVtXT7E',
     category: 'Hollywood',
-    watchonline: 'https://example.com/watch/interstellar',
-    downloadlink: {
-      '720p': 'https://example.com/download/interstellar-720p',
-      '1080p': 'https://example.com/download/interstellar-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie1),
     status: 'Publish',
   },
   {
@@ -120,11 +137,45 @@ const mockMovies = [
     quality: '1080p Web-DL',
     youtubelink: 'https://www.youtube.com/watch?v=yQEondgpld0',
     category: 'TV_Shows',
-    watchonline: 'https://example.com/watch/stranger-things',
-    downloadlink: {
-      '720p': 'https://example.com/download/stranger-things-720p',
-      '1080p': 'https://example.com/download/stranger-things-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),
+    zipDownloadLink: encryptDownloadObject({
+      '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+      '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    }),
+    episodes: [
+      {
+        episodeNumber: 'Ep 01',
+        title: 'Chapter One: The Hellfire Club',
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+        }),
+      },
+      {
+        episodeNumber: 'Ep 02',
+        title: "Chapter Two: Vecna's Curse",
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoywatches.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+        }),
+      },
+      {
+        episodeNumber: 'Ep 03',
+        title: 'Chapter Three: The Monster and the Superhero',
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+        }),
+      },
+      {
+        episodeNumber: 'Ep 04',
+        title: 'Chapter Four: Dear Billy',
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+        }),
+      },
+    ],
     status: 'Publish',
   },
   {
@@ -144,11 +195,8 @@ const mockMovies = [
     quality: '1080p BluRay',
     youtubelink: 'https://www.youtube.com/watch?v=EXeTwQWrcwY',
     category: 'Hollywood',
-    watchonline: 'https://example.com/watch/dark-knight',
-    downloadlink: {
-      '720p': 'https://example.com/download/darkknight-720p',
-      '1080p': 'https://example.com/download/darkknight-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie2),
     status: 'Publish',
   },
   {
@@ -168,11 +216,8 @@ const mockMovies = [
     quality: '1080p Web-DL',
     youtubelink: 'https://www.youtube.com/watch?v=NgBoT01qQZ4',
     category: 'South',
-    watchonline: 'https://example.com/watch/rrr',
-    downloadlink: {
-      '720p': 'https://example.com/download/rrr-720p',
-      '1080p': 'https://example.com/download/rrr-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie3),
     status: 'Publish',
   },
   {
@@ -192,11 +237,8 @@ const mockMovies = [
     quality: '1080p Web-DL',
     youtubelink: 'https://www.youtube.com/watch?v=MWOLN17xXYw',
     category: 'Bollywood',
-    watchonline: 'https://example.com/watch/jawan',
-    downloadlink: {
-      '720p': 'https://example.com/download/jawan-720p',
-      '1080p': 'https://example.com/download/jawan-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie1),
     status: 'Publish',
   },
   {
@@ -205,7 +247,7 @@ const mockMovies = [
     bgposter: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1600&auto=format&fit=crop',
     smposter: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=600&auto=format&fit=crop',
     titlecategory: 'Anime',
-    description: 'After his hometown is destroyed and his mother is killed, young Eren Jaeger vows to cleanse the earth of the giant humanoid Titans that have brought humanity to the brink of extinction.',
+    description: 'After his hometown is destroyed and his mother is killed, young Eren Jaeger vows to cleanse the earth of the giant humanoid Titans.',
     rating: '9.1',
     duration: '28 Episodes',
     year: '2023',
@@ -216,11 +258,29 @@ const mockMovies = [
     quality: '1080p Web-DL',
     youtubelink: 'https://www.youtube.com/watch?v=M_OauHnAFc8',
     category: 'anime',
-    watchonline: 'https://example.com/watch/aot',
-    downloadlink: {
-      '720p': 'https://example.com/download/aot-720p',
-      '1080p': 'https://example.com/download/aot-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'),
+    zipDownloadLink: encryptDownloadObject({
+      '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoywatches.mp4',
+      '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    }),
+    episodes: [
+      {
+        episodeNumber: 'Ep 01',
+        title: 'The Other Side of the Sea',
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+        }),
+      },
+      {
+        episodeNumber: 'Ep 02',
+        title: 'Midnight Train',
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoywatches.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+        }),
+      },
+    ],
     status: 'Publish',
   },
   {
@@ -229,7 +289,7 @@ const mockMovies = [
     bgposter: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1600&auto=format&fit=crop',
     smposter: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600&auto=format&fit=crop',
     titlecategory: 'Series',
-    description: 'A chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student in order to secure his family’s financial future.',
+    description: 'A chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing methamphetamine.',
     rating: '9.5',
     duration: '5 Seasons',
     year: '2013',
@@ -240,11 +300,29 @@ const mockMovies = [
     quality: '1080p BluRay',
     youtubelink: 'https://www.youtube.com/watch?v=HhesaQXLuRY',
     category: 'Web_Series',
-    watchonline: 'https://example.com/watch/breaking-bad',
-    downloadlink: {
-      '720p': 'https://example.com/download/breakingbad-720p',
-      '1080p': 'https://example.com/download/breakingbad-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'),
+    zipDownloadLink: encryptDownloadObject({
+      '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+      '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
+    }),
+    episodes: [
+      {
+        episodeNumber: 'Ep 01',
+        title: 'Pilot',
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+        }),
+      },
+      {
+        episodeNumber: 'Ep 02',
+        title: "Cat's in the Bag...",
+        downloadlink: encryptDownloadObject({
+          '720p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+          '1080p': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoywatches.mp4',
+        }),
+      },
+    ],
     status: 'Publish',
   },
   {
@@ -253,7 +331,7 @@ const mockMovies = [
     bgposter: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1600&auto=format&fit=crop',
     smposter: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600&auto=format&fit=crop',
     titlecategory: 'Movies',
-    description: 'In the blood-soaked Kolar Gold Fields, Rocky’s name strikes fear into his foes. While his allies look up to him, the government sees him as a threat to law and order.',
+    description: 'In the blood-soaked Kolar Gold Fields, Rocky’s name strikes fear into his foes.',
     rating: '8.3',
     duration: '2h 48m',
     year: '2022',
@@ -264,11 +342,8 @@ const mockMovies = [
     quality: '1080p Web-DL',
     youtubelink: 'https://www.youtube.com/watch?v=JKa05nyUmuQ',
     category: 'South',
-    watchonline: 'https://example.com/watch/kgf2',
-    downloadlink: {
-      '720p': 'https://example.com/download/kgf2-720p',
-      '1080p': 'https://example.com/download/kgf2-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie2),
     status: 'Publish',
   },
   {
@@ -277,7 +352,7 @@ const mockMovies = [
     bgposter: 'https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=1600&auto=format&fit=crop',
     smposter: 'https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=600&auto=format&fit=crop',
     titlecategory: 'Anime',
-    description: 'A family is attacked by demons and only two members survive - Tanjiro and his sister Nezuko, who is turning into a demon herself. Tanjiro sets out to become a demon slayer to avenge his family and cure his sister.',
+    description: 'A family is attacked by demons and only two members survive - Tanjiro and his sister Nezuko.',
     rating: '8.6',
     duration: '3 Seasons',
     year: '2023',
@@ -288,11 +363,8 @@ const mockMovies = [
     quality: '1080p Web-DL',
     youtubelink: 'https://www.youtube.com/watch?v=VQGCKyvzIM4',
     category: 'anime',
-    watchonline: 'https://example.com/watch/demon-slayer',
-    downloadlink: {
-      '720p': 'https://example.com/download/demonslayer-720p',
-      '1080p': 'https://example.com/download/demonslayer-1080p',
-    },
+    watchonline: encryptUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'),
+    downloadlink: encryptDownloadObject(sampleVideoLinks.movie3),
     status: 'Publish',
   },
 ];
@@ -302,9 +374,9 @@ async function seedDB() {
     await connectDB();
     console.log('Clearing existing movies collection...');
     await Movie.deleteMany({});
-    console.log('Inserting mock movies data...');
+    console.log('Inserting realistic encrypted seed movies data...');
     const inserted = await Movie.insertMany(mockMovies);
-    console.log(`Successfully seeded ${inserted.length} movies into database!`);
+    console.log(`Successfully seeded ${inserted.length} movies with real media links into database!`);
     process.exit(0);
   } catch (error) {
     console.error('Failed to seed database:', error);

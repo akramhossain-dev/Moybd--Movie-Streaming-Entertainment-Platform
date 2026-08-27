@@ -311,7 +311,17 @@ export default function AddMoviePage() {
                         onChange={handleChange}
                         className="hidden"
                       />
-                      <span>{cat === 'Movies' ? '🎬 Movie' : '📺 Series / Show'}</span>
+                      <span className="flex items-center gap-1.5">
+                        {cat === 'Movies' ? (
+                          <>
+                            <FaFilm className="text-xs text-primary" /> Movie
+                          </>
+                        ) : (
+                          <>
+                            <FaTv className="text-xs text-primary" /> Series / Show
+                          </>
+                        )}
+                      </span>
                     </label>
                   ))}
                 </div>

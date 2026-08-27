@@ -4,6 +4,8 @@ import React from 'react';
 import PublicLayout from '../component/layout/PublicLayout';
 import Container from '../component/ui/Container';
 import Badge from '../component/ui/Badge';
+import Button from '../component/ui/Button';
+import Link from 'next/link';
 import {
   FaGavel,
   FaCheck,
@@ -12,93 +14,99 @@ import {
   FaLaptop,
   FaBan,
   FaEnvelope,
+  FaCheckCircle,
 } from 'react-icons/fa';
 
 export default function TermsAndConditionsPage() {
   const termsList = [
     {
-      icon: <FaCheck className="text-primary" />,
-      title: '1. Free Platform Access',
+      icon: <FaCheck className="text-primary text-lg" />,
+      title: '1. Free Entertainment Platform Access',
       content:
-        'Moybd is a free streaming & discovery service. Users enjoy access to movie listings, trailers, ratings, and quality download links without subscription fees.',
+        'Moybd operates as a free movie discovery and entertainment streaming hub. Users enjoy unrestricted access to catalog listings, trailer embeds, IMDb ratings, and quality download links without compulsory subscription fees.',
     },
     {
-      icon: <FaUserCheck className="text-primary" />,
-      title: '2. User Accounts & Security',
+      icon: <FaUserCheck className="text-primary text-lg" />,
+      title: '2. User Accounts & Responsibilities',
       content:
-        'Users must create an account to access interactive features like commenting, rating, and watchlists. You are responsible for maintaining account credential confidentiality.',
+        'Creating an account unlocks community features such as rating titles, writing reviews, and syncing personal watchlists. Users are responsible for protecting their login credentials and maintaining respectful community interaction.',
     },
     {
-      icon: <FaShieldAlt className="text-primary" />,
-      title: '3. Content Usage Guidelines',
+      icon: <FaShieldAlt className="text-primary text-lg" />,
+      title: '3. Acceptable Use & Guidelines',
       items: [
-        'Use the service strictly for personal, non-commercial entertainment.',
-        'Do not attempt to circumvent technical protection measures.',
-        'Do not redistribute or re-host Moybd content on commercial networks.',
+        'Content usage is restricted strictly to personal, non-commercial entertainment.',
+        'Users must not attempt to breach or bypass rate limits or authorization security controls.',
+        'Spamming, abusive commentary, or unauthorized automated bulk scraping is prohibited.',
       ],
     },
     {
-      icon: <FaLaptop className="text-primary" />,
-      title: '4. Technical Requirements',
+      icon: <FaLaptop className="text-primary text-lg" />,
+      title: '4. System Requirements & Compatibility',
       items: [
-        'Stable internet connection (minimum 5 Mbps recommended for HD/4K).',
-        'Modern web browser (Chrome, Firefox, Safari, Edge).',
-        'Cookies and JavaScript enabled for authentication & watchlists.',
+        'Recommended internet connection speed: 5+ Mbps for HD, 25+ Mbps for 4K Ultra HD.',
+        'Supported modern web browsers: Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge.',
+        'Cookies and JavaScript must be enabled for watchlist sync and session management.',
       ],
     },
     {
-      icon: <FaBan className="text-primary" />,
-      title: '5. Account Termination',
+      icon: <FaBan className="text-primary text-lg" />,
+      title: '5. Account Suspension & Termination',
       content:
-        'We reserve the right to suspend or terminate accounts that violate community standards, engage in spamming, or abuse platform infrastructure.',
+        'We reserve the right to temporarily suspend or permanently terminate user accounts that breach community guidelines, engage in malicious activity, or attempt system abuse.',
     },
     {
-      icon: <FaGavel className="text-primary" />,
-      title: '6. Disclaimer of Warranty',
+      icon: <FaGavel className="text-primary text-lg" />,
+      title: '6. Disclaimer of Warranty & Liability',
       content:
-        'Moybd is provided "as is" without warranties of any kind. We are not liable for temporary service interruptions or third-party external links.',
+        'Moybd is provided on an "as is" and "as available" basis. While we maintain 99.9% CDN uptime, we are not liable for external third-party file host availability or internet routing delays.',
     },
   ];
 
   return (
     <PublicLayout>
-      <section className="relative w-full py-16 sm:py-20 bg-background border-b border-border/40 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none" />
-        <Container className="relative z-10 text-center space-y-4 max-w-3xl">
+      {/* Hero Header */}
+      <section className="relative w-full py-16 sm:py-24 bg-background border-b border-purple-900/40 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
+
+        <Container className="relative z-10 text-center space-y-4 max-w-3xl mx-auto">
           <Badge variant="subtle" size="md">
-            TERMS & AGREEMENTS
+            TERMS OF SERVICE
           </Badge>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
             Terms & Conditions
           </h1>
-          <p className="text-sm sm:text-base text-foreground-muted leading-relaxed">
-            Please read these terms and conditions carefully before using the Moybd platform.
+          <p className="text-sm sm:text-base text-foreground-secondary leading-relaxed">
+            Please read these terms and conditions carefully before using the Moybd platform. Last updated: August 2026.
           </p>
         </Container>
       </section>
 
-      <Container className="py-12 max-w-4xl space-y-6">
+      <Container className="py-12 max-w-4xl space-y-8">
+        {/* Terms Section Cards */}
         {termsList.map((term, idx) => (
           <div
             key={idx}
-            className="bg-surface rounded-2xl p-6 sm:p-8 border border-border/60 space-y-3 shadow-card"
+            className="bg-surface rounded-2xl p-6 sm:p-8 border border-purple-900/40 hover:border-primary/40 transition-all space-y-4 shadow-card"
           >
-            <div className="flex items-center gap-3 text-xl font-bold text-foreground border-b border-border/40 pb-3">
-              <span className="p-2 bg-primary/10 rounded-lg text-sm">{term.icon}</span>
+            <div className="flex items-center gap-3 text-lg sm:text-xl font-bold text-foreground border-b border-purple-900/30 pb-3">
+              <span className="p-2.5 bg-purple-950/80 rounded-xl border border-purple-900/40 shadow-subtle">
+                {term.icon}
+              </span>
               <h2>{term.title}</h2>
             </div>
 
             {term.content && (
-              <p className="text-sm text-foreground-secondary leading-relaxed pt-1">
+              <p className="text-sm text-foreground-secondary leading-relaxed">
                 {term.content}
               </p>
             )}
 
             {term.items && (
-              <ul className="space-y-2 text-sm text-foreground-secondary pt-1">
+              <ul className="space-y-2.5 text-sm text-foreground-secondary pt-1">
                 {term.items.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                  <li key={i} className="flex items-start gap-3">
+                    <FaCheckCircle className="text-primary text-sm mt-1 shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -108,19 +116,18 @@ export default function TermsAndConditionsPage() {
         ))}
 
         {/* Support Section */}
-        <div className="bg-surface-elevated rounded-2xl p-6 border border-border/60 text-center space-y-2">
-          <h3 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
+        <div className="bg-surface rounded-2xl p-8 border border-purple-900/40 text-center space-y-4 shadow-card max-w-2xl mx-auto">
+          <h3 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
             <FaEnvelope className="text-primary" /> Questions About Our Terms?
           </h3>
-          <p className="text-xs text-foreground-muted">
-            Reach out to our support team at{' '}
-            <a
-              href="mailto:support@movieapp.com"
-              className="text-primary font-semibold hover:underline"
-            >
-              support@movieapp.com
-            </a>
+          <p className="text-xs sm:text-sm text-foreground-muted">
+            Have questions regarding platform policies or user agreements? Contact our legal & support desk.
           </p>
+          <Link href="/contact" className="inline-block pt-2">
+            <Button variant="primary" size="lg" iconLeft={<FaEnvelope />}>
+              Contact Legal Support
+            </Button>
+          </Link>
         </div>
       </Container>
     </PublicLayout>

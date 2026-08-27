@@ -1,4 +1,27 @@
 import Movie from "../models/Post.js";
+import { encryptUrl } from "../libs/crypto.js";
+
+function encryptDownloadObject(downloadlink) {
+    if (!downloadlink || typeof downloadlink !== 'object') return {};
+    const encryptedObj = {};
+    for (const [res, url] of Object.entries(downloadlink)) {
+        if (url && typeof url === 'string') {
+            encryptedObj[res] = encryptUrl(url);
+        } else {
+            encryptedObj[res] = '';
+        }
+    }
+    return encryptedObj;
+}
+
+function encryptEpisodesArray(episodes) {
+    if (!Array.isArray(episodes)) return [];
+    return episodes.map((ep) => ({
+        ...ep,
+        downloadlink: encryptDownloadObject(ep.downloadlink),
+        watchonline: ep.watchonline ? encryptUrl(ep.watchonline) : '',
+    }));
+}
 
 const NewPost = async (req, res) => {
     try {
@@ -26,10 +49,10 @@ const NewPost = async (req, res) => {
             quality,
             youtubelink,
             category,
-            watchonline,
-            downloadlink,
-            episodes: episodes || [],
-            zipDownloadLink: zipDownloadLink || {},
+            watchonline: encryptUrl(watchonline),
+            downloadlink: encryptDownloadObject(downloadlink),
+            episodes: encryptEpisodesArray(episodes),
+            zipDownloadLink: encryptDownloadObject(zipDownloadLink),
             status
         });
 
@@ -86,10 +109,10 @@ const UpdatePost = async (req, res) => {
             quality,
             youtubelink,
             category,
-            watchonline,
-            downloadlink,
-            episodes: episodes || [],
-            zipDownloadLink: zipDownloadLink || {},
+            watchonline: watchonline ? encryptUrl(watchonline) : movie.watchonline,
+            downloadlink: downloadlink ? encryptDownloadObject(downloadlink) : movie.downloadlink,
+            episodes: episodes ? encryptEpisodesArray(episodes) : movie.episodes,
+            zipDownloadLink: zipDownloadLink ? encryptDownloadObject(zipDownloadLink) : movie.zipDownloadLink,
             status
         });
 

@@ -2,6 +2,62 @@ import User from '../models/user.js';
 import Comment from '../models/Comments.js';
 import Movie from '../models/Post.js';
 
+function sanitizeMovieForPublic(movieDoc) {
+    if (!movieDoc) return null;
+    const obj = movieDoc.toObject ? movieDoc.toObject() : { ...movieDoc };
+
+    const availableResolutions = [];
+    if (obj.downloadlink && typeof obj.downloadlink === 'object') {
+        for (const [res, url] of Object.entries(obj.downloadlink)) {
+            if (url && typeof url === 'string' && url.trim()) {
+                availableResolutions.push(res);
+            }
+        }
+    }
+
+    const availableZipResolutions = [];
+    if (obj.zipDownloadLink && typeof obj.zipDownloadLink === 'object') {
+        for (const [res, url] of Object.entries(obj.zipDownloadLink)) {
+            if (url && typeof url === 'string' && url.trim()) {
+                availableZipResolutions.push(res);
+            }
+        }
+    }
+
+    const safeEpisodes = [];
+    if (Array.isArray(obj.episodes)) {
+        obj.episodes.forEach((ep) => {
+            const epResolutions = [];
+            if (ep.downloadlink && typeof ep.downloadlink === 'object') {
+                for (const [res, url] of Object.entries(ep.downloadlink)) {
+                    if (url && typeof url === 'string' && url.trim()) {
+                        epResolutions.push(res);
+                    }
+                }
+            }
+            safeEpisodes.push({
+                episodeNumber: ep.episodeNumber || '',
+                title: ep.title || '',
+                availableResolutions: epResolutions,
+                hasWatchOnline: !!ep.watchonline,
+            });
+        });
+    }
+
+    delete obj.downloadlink;
+    delete obj.zipDownloadLink;
+    delete obj.episodes;
+    delete obj.watchonline;
+
+    return {
+        ...obj,
+        hasDownload: availableResolutions.length > 0 || availableZipResolutions.length > 0 || safeEpisodes.length > 0,
+        availableResolutions,
+        availableZipResolutions,
+        episodes: safeEpisodes,
+    };
+}
+
 const Dashboard = async (req, res) => {
     try {
         const MovieCount = await Movie.countDocuments();
@@ -71,14 +127,12 @@ const UpdateRole = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Toggle the role
         if (user.role === 'admin') {
             user.role = 'user';
         } else if (user.role === 'user') {
             user.role = 'admin';
         }
 
-        // Save the updated user
         await user.save();
 
         res.status(200).json({ success: true, message: "User role updated successfully", user });
@@ -89,13 +143,13 @@ const UpdateRole = async (req, res) => {
 
 const movies = async (req, res) => {
     try {
-        const movies = await Movie.find();
-
-        if (!movies) {
+        const moviesList = await Movie.find();
+        if (!moviesList) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: movies });
+        const sanitized = moviesList.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -104,26 +158,27 @@ const movies = async (req, res) => {
 const PublicMovies = async (req, res) => {
     try {
         const publicMovies = await Movie.find({ status: 'Publish' });
-
         if (!publicMovies) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: publicMovies });
+        const sanitized = publicMovies.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
 
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
 const DraftMovies = async (req, res) => {
     try {
         const DraftMovies = await Movie.find({ status: 'Draft' });
-
         if (!DraftMovies) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: DraftMovies });
+        const sanitized = DraftMovies.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
 
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -133,12 +188,12 @@ const DraftMovies = async (req, res) => {
 const movie = async (req, res) => {
     try {
         const movie = await Movie.find({status: 'Publish' , titlecategory: 'Movies' });
-
         if (!movie) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: movie });
+        const sanitized = movie.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -147,147 +202,147 @@ const movie = async (req, res) => {
 const Series = async (req, res) => {
     try {
         const series = await Movie.find({status: 'Publish' , titlecategory: 'Series' });
-
         if (!series) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: series });
+        const sanitized = series.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const Bollywood = async (req, res) => {
     try {
         const bollywood = await Movie.find({status: 'Publish' , category: 'Bollywood' });
-
         if (!bollywood) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: bollywood });
+        const sanitized = bollywood.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const Hollywood = async (req, res) => {
     try {
         const hollywood = await Movie.find({status: 'Publish' , category: 'Hollywood' });
-
         if (!hollywood) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: hollywood });
+        const sanitized = hollywood.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const South = async (req, res) => {
     try {
         const south = await Movie.find({status: 'Publish' , category: 'South' });
-
         if (!south) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: south });
+        const sanitized = south.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const Marvel_Studio = async (req, res) => {
     try {
         const marvel_studio = await Movie.find({status: 'Publish' , category: 'Marvel Studio' });
-
         if (!marvel_studio) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: marvel_studio });
+        const sanitized = marvel_studio.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const Gujarati = async (req, res) => {
     try {
         const gujarati = await Movie.find({status: 'Publish' , category: 'Gujarati' });
-
         if (!gujarati) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: gujarati });
+        const sanitized = gujarati.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const TV_Shows = async (req, res) => {
     try {
         const tv_shows = await Movie.find({status: 'Publish' , category: 'TV Shows' });
-
         if (!tv_shows) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: tv_shows });
+        const sanitized = tv_shows.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const Web_Series = async (req, res) => {
     try {
         const web_series = await Movie.find({status: 'Publish' , category: 'Web Series' });
-
         if (!web_series) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: web_series });
+        const sanitized = web_series.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const Anime = async (req, res) => {
     try {
         const anime = await Movie.find({status: 'Publish' , category: 'Anime' });
-
         if (!anime) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: anime });
+        const sanitized = anime.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 const latestMovies = async (req, res) => {
     try {
         const latestMovies = await Movie.find().sort({ createdAt: -1 });
-
         if (!latestMovies) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: latestMovies });
+        const sanitized = latestMovies.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

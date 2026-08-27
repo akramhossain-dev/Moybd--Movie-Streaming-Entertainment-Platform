@@ -9,7 +9,7 @@ import Dashboardouter from './api/Dashboard.js';
 import GenreRouter from './api/Genre.js';
 import ContactRouter from './api/Contact.js';
 import captchaRouter from './api/captcha.js';
-// import router from './api/download.js';
+import DownloadRouter from './api/download.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -41,7 +41,7 @@ app.use('/api/dashboard', Dashboardouter);
 app.use('/api/genre', GenreRouter);
 app.use('/api/contact', ContactRouter); 
 app.use('/api/captcha', captchaRouter);
-// app.use('/api/download', router); 
+app.use('/api/download', DownloadRouter); 
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);
