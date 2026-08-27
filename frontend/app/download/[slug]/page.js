@@ -1,229 +1,418 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Navbar from "@/app/component/Navber";
-import Footer from "@/app/component/footer";
-import Movie from "@/app/component/movie";
-import Comments from "@/app/component/comments";
-import Loading from "@/app/component/Loading";
-import Captcha from "@/app/component/captcha";
-import "boxicons/css/boxicons.min.css";
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import PublicLayout from '@/app/component/layout/PublicLayout';
+import Container from '@/app/component/ui/Container';
+import Button from '@/app/component/ui/Button';
+import Badge from '@/app/component/ui/Badge';
+import MovieRow from '@/app/component/movie/MovieRow';
+import Comments from '@/app/component/comments';
+import Skeleton from '@/app/component/feedback/Skeleton';
+import ErrorState from '@/app/component/feedback/ErrorState';
+import {
+  FaPlay,
+  FaStar,
+  FaDownload,
+  FaPlus,
+  FaCheck,
+  FaClock,
+  FaCalendarAlt,
+  FaGlobe,
+  FaClosedCaptioning,
+  FaHdd,
+  FaShieldAlt,
+  FaFilm,
+  FaFilm as FaMovie,
+} from 'react-icons/fa';
 
 export default function MovieDetails() {
   const params = useParams();
   const slug = params.slug;
+  const router = useRouter();
+
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [randomMovies, setRandomMovies] = useState([]);
+  const [relatedMovies, setRelatedMovies] = useState([]);
+  const [isWatchlisted, setIsWatchlisted] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
-    if (slug) {
+    if (!slug) return;
+
+    const fetchMovieData = async () => {
       setLoading(true);
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/publicmovies`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            const movieData = data.data.find((movie) => movie.slug === slug);
-            if (movieData) {
-              setMovie(movieData);
-            } else {
-              setError("Movie not found");
-            }
+      setError(null);
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/publicmovies`
+        );
+        if (!response.ok) throw new Error('Failed to fetch movies catalog');
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          const found = data.data.find((m) => m.slug === slug);
+          if (found) {
+            setMovie(found);
+            // Related movies
+            const related = data.data
+              .filter((m) => m.slug !== slug)
+              .sort(() => 0.5 - Math.random())
+              .slice(0, 10);
+            setRelatedMovies(related);
           } else {
-            setError("Failed to fetch movie details");
+            setError('Movie or series not found.');
           }
-        })
-        .catch((err) => setError(`Error: ${err.message}`))
-        .finally(() => setLoading(false));
-    }
+        } else {
+          setError('Failed to load movie details.');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovieData();
   }, [slug]);
 
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/publicmovies`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          const randomMovies = data.data
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 6);
-          setRandomMovies(randomMovies);
-        } else {
-          setError("Failed to fetch random movies");
-        }
-      })
-      .catch((err) => setError(`Error: ${err.message}`));
-  }, []);
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-  if (loading) return <Loading />;
-  if (error) return <p>{error}</p>;
-  if (!movie) return <p>Movie not found</p>;
+  if (loading) {
+    return (
+      <PublicLayout>
+        <div className="relative w-full h-[55vh] bg-surface-elevated overflow-hidden">
+          <Skeleton className="w-full h-full rounded-none" />
+        </div>
+        <Container className="py-8 space-y-6">
+          <Skeleton className="h-10 w-2/3" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+        </Container>
+      </PublicLayout>
+    );
+  }
+
+  if (error || !movie) {
+    return (
+      <PublicLayout>
+        <Container className="py-16">
+          <ErrorState
+            title="Title Not Found"
+            message={error || 'The requested movie or series could not be found.'}
+            onRetry={() => router.push('/')}
+          />
+        </Container>
+      </PublicLayout>
+    );
+  }
+
+  const genres = Array.isArray(movie.genre)
+    ? movie.genre
+    : typeof movie.genre === 'string'
+    ? movie.genre.split(',').map((g) => g.trim())
+    : [];
+
+  const downloadLinks = movie.downloadlink || {};
+  const hasDownloadObject =
+    typeof downloadLinks === 'object' && Object.keys(downloadLinks).length > 0;
 
   return (
-    <>
-      <div className="bg-black">
-        <Navbar />
-        <Captcha />
-        <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            {/* Hero Section */}
-            <div className="relative h-[400px] rounded-xl overflow-hidden mb-8">
+    <PublicLayout>
+      {/* 1. Cinematic Details Hero Header */}
+      <section className="relative w-full overflow-hidden bg-background border-b border-border/40 pb-8 sm:pb-12">
+        {/* Full-Bleed Backdrop Image with Gradients */}
+        <div className="absolute inset-0 h-[60vh] sm:h-[70vh]">
+          <img
+            src={
+              imgError
+                ? 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1600&auto=format&fit=crop'
+                : movie.bgposter || movie.smposter
+            }
+            alt={movie.title}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover object-center scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+        </div>
+
+        {/* Hero Content Overlay */}
+        <Container className="relative z-10 pt-28 sm:pt-36">
+          <div className="flex flex-col md:flex-row items-center md:items-end gap-6 sm:gap-8">
+            {/* Poster Thumbnail */}
+            <div className="w-44 sm:w-56 aspect-[2/3] shrink-0 rounded-2xl overflow-hidden shadow-modal border border-white/10 group bg-surface">
               <img
-                src={movie.bgposter}
-                alt={movie.title}
-                className="object-cover w-full h-full"
+                src={movie.smposter || movie.bgposter}
+                alt={`${movie.title} Poster`}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <div className="absolute bottom-0 left-0 p-8 text-white">
-                <h1 className="mb-4 text-4xl font-bold">{movie.title}</h1>
-                <div className="flex items-center gap-6 text-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white">
-                      {" "}
-                      <i className="text-yellow-500 bx bxs-star"></i>
-                      {movie.rating}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>
-                      <i className="bx bx-time"></i> {movie.duration}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>
-                      <i className="bx bx-calendar"></i> {movie.year}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              {/* Main Content */}
-              <div className="space-y-8 lg:col-span-2">
-                {/* Description */}
-                <div className="p-6 shadow-sm rounded-xl bg-[#030303]">
-                  <h2 className="mb-4 text-2xl font-bold text-white ">
-                    Sunopsis / Story Line:
-                  </h2>
-                  <p className="leading-relaxed text-white">
-                    {movie.description}
-                  </p>
-                </div>
+            {/* Title & Key Metadata */}
+            <div className="space-y-4 text-center md:text-left text-foreground flex-1">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                {movie.quality && (
+                  <Badge variant="quality" size="xs">
+                    {movie.quality}
+                  </Badge>
+                )}
+                {movie.category && (
+                  <Badge variant="subtle" size="xs">
+                    {movie.category}
+                  </Badge>
+                )}
+                {genres.map((g, idx) => (
+                  <Badge key={idx} variant="genre" size="xs">
+                    {g}
+                  </Badge>
+                ))}
+              </div>
 
-                {/* Download Section */}
-                <div className="p-6 shadow-sm rounded-xl bg-[#030303]">
-                  <h2 className="mb-6 text-2xl font-bold text-white">
-                    Download Links
-                  </h2>
-                  <div className="grid grid-cols-1 gap-4 text-white">
-                    <div className="flex items-center gap-4">
-                      <button
-                        className="w-full px-6 py-3 text-white transition-all bg-blue-600 rounded-lg shadow-lg hover:bg-blue-700 hover:shadow-xl"
-                        onClick={() => {
-                          window.location.href = `http://127.0.0.1:6969/get_movies?watchonline=${movie.watchonline}`;
-                        }}
+              <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white drop-shadow-md">
+                {movie.title}
+              </h1>
+
+              {/* Metadata Pill Row */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs sm:text-sm text-foreground-secondary">
+                {movie.rating && (
+                  <div className="flex items-center gap-1.5 font-bold text-rating bg-rating/10 px-2.5 py-1 rounded-md border border-rating/20">
+                    <FaStar className="text-xs" />
+                    <span>{movie.rating} IMDb</span>
+                  </div>
+                )}
+                {movie.duration && (
+                  <div className="flex items-center gap-1.5">
+                    <FaClock className="text-foreground-muted" />
+                    <span>{movie.duration}</span>
+                  </div>
+                )}
+                {movie.year && (
+                  <div className="flex items-center gap-1.5">
+                    <FaCalendarAlt className="text-foreground-muted" />
+                    <span>{movie.year}</span>
+                  </div>
+                )}
+                {movie.language && (
+                  <div className="flex items-center gap-1.5">
+                    <FaGlobe className="text-foreground-muted" />
+                    <span>{movie.language}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
+                {movie.youtubelink && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    iconLeft={<FaPlay className="text-xs ml-0.5" />}
+                    onClick={() => scrollToSection('watch-online')}
+                  >
+                    Watch Trailer
+                  </Button>
+                )}
+
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  iconLeft={<FaDownload className="text-xs" />}
+                  onClick={() => scrollToSection('download-section')}
+                >
+                  Download
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  iconLeft={
+                    isWatchlisted ? (
+                      <FaCheck className="text-success text-xs" />
+                    ) : (
+                      <FaPlus className="text-xs" />
+                    )
+                  }
+                  onClick={() => setIsWatchlisted(!isWatchlisted)}
+                >
+                  {isWatchlisted ? 'In Watchlist' : 'Add to Watchlist'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* 2. Main Details Grid Layout */}
+      <Container className="py-10 space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content Area (2 Cols on Desktop) */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Synopsis Card */}
+            <div className="bg-surface rounded-2xl p-6 border border-border/60 space-y-3 shadow-card">
+              <h2 className="text-xl font-bold text-foreground border-b border-border/40 pb-3 flex items-center gap-2">
+                <FaMovie className="text-primary" /> Storyline / Synopsis
+              </h2>
+              <p className="text-sm sm:text-base text-foreground-secondary leading-relaxed">
+                {movie.description || 'No detailed storyline available for this title.'}
+              </p>
+            </div>
+
+            {/* Watch Online / Trailer Video Embed */}
+            {movie.youtubelink && (
+              <div id="watch-online" className="bg-surface rounded-2xl p-6 border border-border/60 space-y-4 shadow-card">
+                <h2 className="text-xl font-bold text-foreground border-b border-border/40 pb-3 flex items-center gap-2">
+                  <FaPlay className="text-primary" /> Official Trailer / Stream Preview
+                </h2>
+                <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black shadow-modal border border-border/50">
+                  <iframe
+                    className="w-full h-full"
+                    src={
+                      movie.youtubelink.includes('watch?v=')
+                        ? movie.youtubelink.replace('watch?v=', 'embed/')
+                        : movie.youtubelink
+                    }
+                    title={`${movie.title} Trailer`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Download Links Section */}
+            <div id="download-section" className="bg-surface rounded-2xl p-6 border border-border/60 space-y-4 shadow-card">
+              <h2 className="text-xl font-bold text-foreground border-b border-border/40 pb-3 flex items-center gap-2">
+                <FaDownload className="text-primary" /> Fast Download Links
+              </h2>
+
+              {hasDownloadObject ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(downloadLinks).map(([resolution, url]) => {
+                    if (!url) return null;
+                    return (
+                      <a
+                        key={resolution}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-3.5 bg-surface-elevated hover:bg-primary/10 border border-border/60 hover:border-primary/40 rounded-xl transition-all group"
                       >
-                        Download Link
-                      </button>
-                    </div>
-                  </div>
+                        <div className="flex items-center gap-2.5">
+                          <FaDownload className="text-primary text-sm group-hover:scale-110 transition-transform" />
+                          <span className="text-sm font-bold text-foreground uppercase">
+                            Download {resolution}
+                          </span>
+                        </div>
+                        <Badge variant="quality" size="xs">
+                          {resolution.toUpperCase()}
+                        </Badge>
+                      </a>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    iconLeft={<FaDownload className="text-sm" />}
+                    onClick={() => {
+                      if (movie.watchonline) {
+                        window.location.href = `http://127.0.0.1:6969/get_movies?watchonline=${movie.watchonline}`;
+                      } else {
+                        alert('Download link currently unavailable.');
+                      }
+                    }}
+                  >
+                    Direct High-Speed Download
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Comments Section */}
+            <Comments
+              postId={movie._id}
+              commentId={movie.comments}
+              title={movie.title}
+            />
+          </div>
+
+          {/* Sidebar Quick Information (1 Col on Desktop) */}
+          <div className="space-y-6">
+            <div className="bg-surface rounded-2xl p-6 border border-border/60 space-y-4 shadow-card">
+              <h2 className="text-lg font-bold text-foreground border-b border-border/40 pb-3">
+                Quick Information
+              </h2>
+
+              <div className="space-y-3.5 text-xs sm:text-sm">
+                <div className="flex items-start justify-between gap-2 text-foreground-secondary">
+                  <span className="text-foreground-muted font-medium flex items-center gap-1.5">
+                    <FaFilm className="text-xs text-primary" /> Genres:
+                  </span>
+                  <span className="text-right font-semibold text-foreground">
+                    {genres.join(', ') || 'N/A'}
+                  </span>
                 </div>
 
-                {/* Watch Online */}
-                <div className="p-6 shadow-sm rounded-xl bg-[#030303]">
-                  <h2 className="mb-6 text-2xl font-bold text-white">
-                    Watch Online
-                  </h2>
-                  <div className="relative">
-                    <iframe
-                      className="w-full h-[400px] rounded-lg shadow-lg"
-                      src={movie.youtubelink}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-8">
-                {/* Movie Info Card */}
-                <div className="p-6 shadow-sm rounded-xl bg-[#030303]">
-                  <h2 className="mb-6 text-2xl font-bold text-white ">
-                    Movie Information
-                  </h2>
-                  <div className="space-y-4">
-                    <p className="flex items-center text-white gap-0.5">
-                      {" "}
-                      <strong>Genre:</strong> {movie.genre.join(", ")}
-                    </p>
-                    <p className="flex items-center text-white gap-0.5">
-                      {" "}
-                      <strong>Language:</strong> {movie.language}
-                    </p>
-                    <p className="flex items-center text-white gap-0.5">
-                      {" "}
-                      <i className="bx bx-captions text-white"></i>{" "}
-                      <strong>Subtitles:</strong> {movie.subtitle}
-                    </p>
-                    <p className="flex items-center text-white gap-0.5">
-                      {" "}
-                      <i className="bx bx-hdd text-white"></i>{" "}
-                      <strong>Size:</strong> {movie.size}
-                    </p>
-                    <p className="flex items-center text-white gap-0.5">
-                      {" "}
-                      <i className="bx bx-shield text-white"></i>
-                      <strong>Quality:</strong> {movie.quality}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-between gap-2 text-foreground-secondary">
+                  <span className="text-foreground-muted font-medium flex items-center gap-1.5">
+                    <FaGlobe className="text-xs text-primary" /> Language:
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {movie.language || 'English'}
+                  </span>
                 </div>
 
-                {/* Poster */}
-                <img
-                  src={movie.smposter}
-                  alt={`${movie.title} Poster`}
-                  className="w-full shadow-sm rounded-xl"
-                />
+                <div className="flex items-center justify-between gap-2 text-foreground-secondary">
+                  <span className="text-foreground-muted font-medium flex items-center gap-1.5">
+                    <FaClosedCaptioning className="text-xs text-primary" /> Subtitles:
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {movie.subtitle || 'None'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 text-foreground-secondary">
+                  <span className="text-foreground-muted font-medium flex items-center gap-1.5">
+                    <FaHdd className="text-xs text-primary" /> Size:
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {movie.size || 'N/A'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 text-foreground-secondary">
+                  <span className="text-foreground-muted font-medium flex items-center gap-1.5">
+                    <FaShieldAlt className="text-xs text-primary" /> Quality:
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {movie.quality || 'HD Web-DL'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mx-[3vw] mt-4 sm:mx-[5vw]">
-          <hr className="border-t border-gray-600" />
-          <h2 className="flex items-center justify-center text-3xl font-semibold text-white">
-            <i className="bx bx-camera-movie"></i> More Movies
-          </h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {randomMovies.map((movie) => (
-              <div
-                key={movie.slug}
-                className="flex flex-col items-center p-2 rounded-lg"
-              >
-                <Movie
-                  key={movie._id}
-                  slug={movie.slug}
-                  title={movie.title}
-                  smposter={movie.smposter}
-                  rating={movie.rating}
-                  year={movie.year}
-                />
-              </div>
-            ))}
+        {/* 3. Related Content Horizontal Row */}
+        {relatedMovies.length > 0 && (
+          <div className="pt-6 border-t border-border/40">
+            <MovieRow
+              title="More Titles You May Like"
+              subtitle="Handpicked recommendations based on this title"
+              movies={relatedMovies}
+            />
           </div>
-        </div>
-        <hr className="border-t border-gray-600 w-[70vw] mx-auto" />
-        <Comments
-          postId={movie._id}
-          commentId={movie.comments}
-          title={movie.title}
-        />
-        <Footer />
-      </div>
-    </>
+        )}
+      </Container>
+    </PublicLayout>
   );
 }
