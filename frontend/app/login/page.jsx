@@ -2,11 +2,18 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '../component/Navber';
-import Footer from '../component/footer';
-import Input from '../component/Input';
-import { EmailIcon, LockIcon, MovieIcon, ArrowIcon } from '../component/icons';
+import Link from 'next/link';
+import AuthLayout from '../component/layout/AuthLayout';
+import Button from '../component/ui/Button';
 import crypto from 'crypto';
+import {
+  FaEnvelope,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaArrowRight,
+  FaExclamationCircle,
+} from 'react-icons/fa';
 
 const decryptAES = (encrypted, secret, iv) => {
   const key = crypto.createHash('sha256').update(secret).digest();
@@ -16,11 +23,12 @@ const decryptAES = (encrypted, secret, iv) => {
   return decrypted;
 };
 
-const AES_SECRET = process.env.NEXT_PUBLIC_AES_SECRET; 
+const AES_SECRET = process.env.NEXT_PUBLIC_AES_SECRET;
 
-function Page() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -32,14 +40,15 @@ function Page() {
     setError('');
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await response.json();
 
@@ -48,106 +57,138 @@ function Page() {
           const decryptedToken = JSON.parse(
             decryptAES(data.token.Data, AES_SECRET, data.token.iv)
           );
+
           if (decryptedToken.isLoggedIn === true) {
             if (rememberMe) {
               localStorage.setItem('isLoggedIn', 'true');
             } else {
               sessionStorage.setItem('isLoggedIn', 'true');
             }
-            alert('Login successful!');
             router.push('/');
           } else {
-            setError('Login failed. Please try again.');
+            setError('Login failed. Please verify your credentials.');
           }
         } catch (err) {
-          setError('Unable to decrypt login data.');
+          setError('Unable to process login token response.');
         }
       } else {
-        setError(data.message || 'Login failed. Please try again.');
+        setError(data.message || 'Invalid email or password.');
       }
     } catch (err) {
       console.error('Error during login:', err);
-      setError('An unexpected error occurred. Please try again.');
+      setError('Connection error. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-black">
-      <Navbar />
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-full max-w-md p-8 space-y-8 border bg-zinc-900/50 rounded-2xl backdrop-blur-sm border-zinc-800">
-          <div className="text-center">
-            <div className="flex justify-center">
-              <MovieIcon />
-            </div>
-            <h2 className="mt-4 text-3xl font-bold text-white">Login to Your Account</h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Access personalized recommendations and review your favorite movies and anime!
-            </p>
+    <AuthLayout
+      title="Welcome Back"
+      subtitle="Sign in to your account to access personalized recommendations & watchlists."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+        {/* Error Alert Banner */}
+        {error && (
+          <div className="flex items-center gap-2.5 p-3.5 bg-danger/10 border border-danger/30 rounded-xl text-danger text-xs font-medium animate-in fade-in">
+            <FaExclamationCircle className="text-sm shrink-0" />
+            <span>{error}</span>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <Input
-              icon={EmailIcon}
+        )}
+
+        {/* Email Field */}
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="text-xs font-semibold text-foreground-secondary">
+            Email Address
+          </label>
+          <div className="relative">
+            <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+            <input
+              id="email"
               type="email"
-              placeholder="Enter your email"
+              required
+              autoComplete="email"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
             />
-            <Input
-              icon={LockIcon}
-              type="password"
+          </div>
+        </div>
+
+        {/* Password Field */}
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="text-xs font-semibold text-foreground-secondary">
+            Password
+          </label>
+          <div className="relative">
+            <FaLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              autoComplete="current-password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              className="w-full pl-9 pr-10 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
             />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <div className="flex items-center justify-between gap-1">
-              <div className='flex items-center'>
-                <input
-                  id="remember"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-red-500 rounded border-zinc-700 bg-zinc-800 focus:ring-red-500 focus:ring-offset-zinc-900"
-                />
-                <label htmlFor="remember" className="ml-2 text-sm text-zinc-400">
-                  Remember me
-                </label>
-              </div>
-              <a href="/forget" className="ml-1 text-red-500 hover:text-red-400">
-                Forget Password?
-              </a>
-            </div>
             <button
-              type="submit"
-              className={`relative flex items-center justify-center w-full px-4 py-3 font-medium text-white transition-colors ${
-                isSubmitting ? 'bg-red-600 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
-              } border border-transparent group rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
-              disabled={isSubmitting}
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground text-xs focus:outline-none"
             >
-              {isSubmitting ? 'Submitting...' : 'Sign In'}
-              <ArrowIcon />
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
-            <p className="text-sm text-center text-zinc-400">
-              Don't have an account?{' '}
-              <button
-                type="button"
-                className="font-medium text-red-500 hover:text-red-400"
-                onClick={() => router.push('/signup')}
-              >
-                Sign up here
-              </button>
-            </p>
-          </form>
+          </div>
         </div>
-      </div>
-      <Footer />
-    </div>
+
+        {/* Remember Me & Forgot Password */}
+        <div className="flex items-center justify-between pt-1 text-xs">
+          <label className="flex items-center gap-2 cursor-pointer text-foreground-muted hover:text-foreground">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-3.5 h-3.5 rounded border-border/60 bg-background accent-primary text-primary cursor-pointer"
+            />
+            <span>Remember me</span>
+          </label>
+
+          <Link
+            href="/forget"
+            className="font-medium text-primary hover:text-primary-hover transition-colors"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-2">
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            disabled={isSubmitting}
+            iconRight={!isSubmitting ? <FaArrowRight className="text-xs" /> : null}
+          >
+            {isSubmitting ? 'Signing In...' : 'Sign In'}
+          </Button>
+        </div>
+
+        {/* Footer Link */}
+        <p className="text-center text-xs text-foreground-muted pt-3 border-t border-border/40">
+          Don't have an account?{' '}
+          <Link
+            href="/signup"
+            className="font-bold text-primary hover:text-primary-hover transition-colors ml-1"
+          >
+            Create an account
+          </Link>
+        </p>
+      </form>
+    </AuthLayout>
   );
 }
-
-export default Page;

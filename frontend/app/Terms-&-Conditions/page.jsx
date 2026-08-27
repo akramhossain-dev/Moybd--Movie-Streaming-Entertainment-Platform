@@ -1,137 +1,128 @@
-"use client"
+'use client';
+
 import React from 'react';
-import Navbar from '../component/Navber';
-import Footer from '../component/footer';
+import PublicLayout from '../component/layout/PublicLayout';
+import Container from '../component/ui/Container';
+import Badge from '../component/ui/Badge';
+import {
+  FaGavel,
+  FaCheck,
+  FaUserCheck,
+  FaShieldAlt,
+  FaLaptop,
+  FaBan,
+  FaEnvelope,
+} from 'react-icons/fa';
 
-function App() {
-    return (
-        <div className="min-h-screen px-4 text-gray-200 bg-black sm:px-6 lg:px-8">
-            <Navbar />
-            <h1 className='mb-4 text-4xl font-bold text-center text-red-600'>Terms & Conditions</h1>
-            {/* Main Content */}
-            <main className="max-w-4xl mx-auto">
-                <div className="p-8 bg-gray-900 border border-red-800 rounded-lg shadow-2xl">
-                    <section className="mb-8">
-                        <h3 className="mb-4 text-xl font-semibold text-red-500">Welcome to MOYBD</h3>
-                        <p className="mb-4">
-                            By accessing and using MOYBD, you accept and agree to be bound by the terms and
-                            provisions of this agreement.
-                        </p>
-                    </section>
-                    <div className="space-y-8">
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">1. Free Access</h3>
-                            <div className="space-y-3">
-                                <p>MOYBD is completely free to use. We provide:</p>
-                                <ul className="ml-4 space-y-2 list-disc list-inside">
-                                    <li>Unlimited movie streaming</li>
-                                    <li>Ad-supported content</li>
-                                    <li>Access to our entire library</li>
-                                    <li>Regular content updates</li>
-                                </ul>
-                            </div>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">2. User Accounts</h3>
-                            <p>
-                                While MOYBD is free, users must create an account to access our services. You are
-                                responsible for maintaining the confidentiality of your account information.
-                            </p>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">3. Content Usage</h3>
-                            <div className="space-y-3">
-                                <p>Users agree to:</p>
-                                <ul className="ml-4 space-y-2 list-disc list-inside">
-                                    <li>Not redistribute our content</li>
-                                    <li>Use the service for personal, non-commercial purposes</li>
-                                    <li>Not attempt to circumvent any technical protection measures</li>
-                                    <li>Not share account credentials</li>
-                                </ul>
-                            </div>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">4. Service Availability</h3>
-                            <p>
-                                We strive to provide uninterrupted service, but we may need to perform maintenance or
-                                updates. We reserve the right to modify or discontinue the service at any time.
-                            </p>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">5. Privacy Policy</h3>
-                            <p>
-                                Your privacy is important to us. Please review our Privacy Policy to understand how we
-                                collect, use, and protect your personal information.
-                            </p>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">6. Content Guidelines</h3>
-                            <div className="space-y-3">
-                                <p>All users must adhere to our content guidelines:</p>
-                                <ul className="ml-4 space-y-2 list-disc list-inside">
-                                    <li>No inappropriate or offensive comments</li>
-                                    <li>Respect intellectual property rights</li>
-                                    <li>No spamming or harassment</li>
-                                    <li>Age-appropriate interaction</li>
-                                </ul>
-                            </div>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">7. Technical Requirements</h3>
-                            <div className="space-y-3">
-                                <p>To use MOYBD, you need:</p>
-                                <ul className="ml-4 space-y-2 list-disc list-inside">
-                                    <li>Stable internet connection (minimum 5 Mbps)</li>
-                                    <li>Modern web browser (Chrome, Firefox, Safari, Edge)</li>
-                                    <li>JavaScript enabled</li>
-                                    <li>Cookies enabled for proper functionality</li>
-                                </ul>
-                            </div>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">8. Termination</h3>
-                            <div className="space-y-3">
-                                <p>We reserve the right to terminate or suspend access to our service immediately, without prior notice or liability, for any reason, including:</p>
-                                <ul className="ml-4 space-y-2 list-disc list-inside">
-                                    <li>Violation of Terms</li>
-                                    <li>Fraudulent activity</li>
-                                    <li>Abuse of service</li>
-                                    <li>Multiple account creation</li>
-                                </ul>
-                            </div>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">9. Changes to Terms</h3>
-                            <p>
-                                We may modify these terms at any time. Continued use of MOYBD after changes constitutes acceptance of new terms. Users will be notified of significant changes.
-                            </p>
-                        </section>
-                        <section>
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">10. Disclaimer</h3>
-                            <p>
-                                MOYBD is provided "as is" without warranties of any kind. We are not responsible for any technical issues, content availability, or third-party links.
-                            </p>
-                        </section>
-                        <section className="p-6 mt-12 bg-gray-800 rounded-lg">
-                            <h3 className="mb-4 text-xl font-semibold text-red-500">Contact Us</h3>
-                            <p>
-                                If you have any questions about these Terms & Conditions, please contact us at:
-                                <br />
-                                <a
-                                    href="mailto:support@movieapp.com"
-                                    className="text-red-500 transition-colors hover:text-red-400"
-                                >
-                                    support@movieapp.com
-                                </a>
-                            </p>
-                        </section>
-                    </div>
-                </div>
-            </main>
+export default function TermsAndConditionsPage() {
+  const termsList = [
+    {
+      icon: <FaCheck className="text-primary" />,
+      title: '1. Free Platform Access',
+      content:
+        'Moybd is a free streaming & discovery service. Users enjoy access to movie listings, trailers, ratings, and quality download links without subscription fees.',
+    },
+    {
+      icon: <FaUserCheck className="text-primary" />,
+      title: '2. User Accounts & Security',
+      content:
+        'Users must create an account to access interactive features like commenting, rating, and watchlists. You are responsible for maintaining account credential confidentiality.',
+    },
+    {
+      icon: <FaShieldAlt className="text-primary" />,
+      title: '3. Content Usage Guidelines',
+      items: [
+        'Use the service strictly for personal, non-commercial entertainment.',
+        'Do not attempt to circumvent technical protection measures.',
+        'Do not redistribute or re-host Moybd content on commercial networks.',
+      ],
+    },
+    {
+      icon: <FaLaptop className="text-primary" />,
+      title: '4. Technical Requirements',
+      items: [
+        'Stable internet connection (minimum 5 Mbps recommended for HD/4K).',
+        'Modern web browser (Chrome, Firefox, Safari, Edge).',
+        'Cookies and JavaScript enabled for authentication & watchlists.',
+      ],
+    },
+    {
+      icon: <FaBan className="text-primary" />,
+      title: '5. Account Termination',
+      content:
+        'We reserve the right to suspend or terminate accounts that violate community standards, engage in spamming, or abuse platform infrastructure.',
+    },
+    {
+      icon: <FaGavel className="text-primary" />,
+      title: '6. Disclaimer of Warranty',
+      content:
+        'Moybd is provided "as is" without warranties of any kind. We are not liable for temporary service interruptions or third-party external links.',
+    },
+  ];
 
-            <Footer />
+  return (
+    <PublicLayout>
+      <section className="relative w-full py-16 sm:py-20 bg-background border-b border-border/40 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none" />
+        <Container className="relative z-10 text-center space-y-4 max-w-3xl">
+          <Badge variant="subtle" size="md">
+            TERMS & AGREEMENTS
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+            Terms & Conditions
+          </h1>
+          <p className="text-sm sm:text-base text-foreground-muted leading-relaxed">
+            Please read these terms and conditions carefully before using the Moybd platform.
+          </p>
+        </Container>
+      </section>
+
+      <Container className="py-12 max-w-4xl space-y-6">
+        {termsList.map((term, idx) => (
+          <div
+            key={idx}
+            className="bg-surface rounded-2xl p-6 sm:p-8 border border-border/60 space-y-3 shadow-card"
+          >
+            <div className="flex items-center gap-3 text-xl font-bold text-foreground border-b border-border/40 pb-3">
+              <span className="p-2 bg-primary/10 rounded-lg text-sm">{term.icon}</span>
+              <h2>{term.title}</h2>
+            </div>
+
+            {term.content && (
+              <p className="text-sm text-foreground-secondary leading-relaxed pt-1">
+                {term.content}
+              </p>
+            )}
+
+            {term.items && (
+              <ul className="space-y-2 text-sm text-foreground-secondary pt-1">
+                {term.items.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+
+        {/* Support Section */}
+        <div className="bg-surface-elevated rounded-2xl p-6 border border-border/60 text-center space-y-2">
+          <h3 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
+            <FaEnvelope className="text-primary" /> Questions About Our Terms?
+          </h3>
+          <p className="text-xs text-foreground-muted">
+            Reach out to our support team at{' '}
+            <a
+              href="mailto:support@movieapp.com"
+              className="text-primary font-semibold hover:underline"
+            >
+              support@movieapp.com
+            </a>
+          </p>
         </div>
-    );
+      </Container>
+    </PublicLayout>
+  );
 }
-
-export default App;

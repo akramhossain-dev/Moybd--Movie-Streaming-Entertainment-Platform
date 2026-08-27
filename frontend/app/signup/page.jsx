@@ -2,182 +2,293 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '../component/Navber';
-import Footer from '../component/footer';
-import Input from '../component/Input';
-import { MovieIcon, EmailIcon, LockIcon, UserIcon, ArrowIcon } from '../component/icons';
+import Link from 'next/link';
+import AuthLayout from '../component/layout/AuthLayout';
+import Button from '../component/ui/Button';
+import {
+  FaUser,
+  FaEnvelope,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaArrowRight,
+  FaKey,
+  FaExclamationCircle,
+  FaCheckCircle,
+} from 'react-icons/fa';
 
-function RegisterPage() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [verificationCode, setVerificationCode] = useState('');
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [step, setStep] = useState(1);
+export default function RegisterPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState(1);
 
-    const router = useRouter();
+  const router = useRouter();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
-            return;
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    const userData = { name, email, password };
+
+    try {
+      setIsSubmitting(true);
+      setError('');
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData),
         }
+      );
 
-        const userData = { name, email, password };
+      const data = await response.json();
 
-        try {
-            setIsSubmitting(true);
-            setError(null);
+      if (response.ok) {
+        setStep(2);
+        setSuccessMsg(
+          'Registration successful! Please check your email for the verification code.'
+        );
+      } else {
+        setError(data.message || 'Registration failed.');
+      }
+    } catch (err) {
+      console.error('Error during signup:', err);
+      setError('Connection error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData),
-            });
+  const handleVerification = async (e) => {
+    e.preventDefault();
 
-            const data = await response.json();
+    try {
+      setIsSubmitting(true);
+      setError('');
 
-            if (response.ok) {
-                setStep(2);
-                alert('Registration successful. Please check your email for the verification code.');
-            } else {
-                setError(data.message || 'Registration failed');
-            }
-        } catch (err) {
-            console.error('Error:', err);
-            setError('An error occurred. Please try again.');
-        } finally {
-            setIsSubmitting(false);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, verificationCode }),
         }
-    };
+      );
 
-    const handleVerification = async (e) => {
-        e.preventDefault();
+      const data = await response.json();
 
-        try {
-            setIsSubmitting(true);
-            setError(null);
+      if (response.ok) {
+        setSuccessMsg('Account verified successfully! Redirecting...');
+        setTimeout(() => router.push('/'), 1500);
+      } else {
+        setError(data.message || 'Verification failed.');
+      }
+    } catch (err) {
+      console.error('Error during verification:', err);
+      setError('Connection error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, verificationCode }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess(true);
-                alert('Account verified successfully!');
-                setTimeout(() => router.push('/'), 2000);
-            } else {
-                setError(data.message || 'Verification failed');
-            }
-        } catch (err) {
-            console.error('Error:', err);
-            setError('An error occurred. Please try again.');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <div className="bg-black">
-            <Navbar />
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="w-full max-w-md p-8 space-y-8 border bg-zinc-900/50 rounded-2xl backdrop-blur-sm border-zinc-800">
-                    <div className="text-center">
-                        <div className="flex justify-center">
-                            <MovieIcon />
-                        </div>
-                        <h2 className="mt-4 text-3xl font-bold text-white">
-                            {step === 1 ? 'Create Your Account' : 'Verify Your Account'}
-                        </h2>
-                        <p className="mt-2 text-sm text-zinc-400">
-                            {step === 1
-                                ? 'Sign up to explore and rate your favorite movies and anime!'
-                                : 'Enter the verification code sent to your email.'}
-                        </p>
-                    </div>
-                    {step === 1 ? (
-                        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                            <Input
-                                icon={UserIcon}
-                                type="text"
-                                placeholder="Enter your name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
-                            <Input
-                                icon={EmailIcon}
-                                type="email"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <Input
-                                icon={LockIcon}
-                                type="password"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            <Input
-                                icon={LockIcon}
-                                type="password"
-                                placeholder="Confirm your password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                            />
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className={`relative flex items-center justify-center w-full px-4 py-3 font-medium text-white transition-colors ${
-                                    isSubmitting ? 'bg-red-600 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
-                                } border border-transparent group rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
-                            >
-                                {isSubmitting ? 'Submitting...' : 'Sign up'}
-                                <ArrowIcon />
-                            </button>
-                        </form>
-                    ) : (
-                        <form className="mt-8 space-y-6" onSubmit={handleVerification}>
-                            <Input
-                                icon={EmailIcon}
-                                type="text"
-                                placeholder="Enter verification code"
-                                value={verificationCode}
-                                onChange={(e) => setVerificationCode(e.target.value)}
-                                required
-                            />
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className={`relative flex items-center justify-center w-full px-4 py-3 font-medium text-white transition-colors ${
-                                    isSubmitting ? 'bg-red-600 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
-                                } border border-transparent group rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
-                            >
-                                {isSubmitting ? 'Submitting...' : 'Verify'}
-                                <ArrowIcon />
-                            </button>
-                        </form>
-                    )}
-                </div>
-            </div>
-            <Footer />
+  return (
+    <AuthLayout
+      title={step === 1 ? 'Create Your Account' : 'Verify Your Email'}
+      subtitle={
+        step === 1
+          ? 'Sign up to explore and rate your favorite movies, series, and anime.'
+          : `Enter the verification code sent to ${email}.`
+      }
+    >
+      {/* Alert Banners */}
+      {error && (
+        <div className="flex items-center gap-2.5 p-3.5 bg-danger/10 border border-danger/30 rounded-xl text-danger text-xs font-medium animate-in fade-in">
+          <FaExclamationCircle className="text-sm shrink-0" />
+          <span>{error}</span>
         </div>
-    );
-}
+      )}
 
-export default RegisterPage;
+      {successMsg && (
+        <div className="flex items-center gap-2.5 p-3.5 bg-success/10 border border-success/30 rounded-xl text-success text-xs font-medium animate-in fade-in">
+          <FaCheckCircle className="text-sm shrink-0" />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
+      {step === 1 ? (
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          {/* Name Field */}
+          <div className="space-y-1.5">
+            <label htmlFor="name" className="text-xs font-semibold text-foreground-secondary">
+              Full Name
+            </label>
+            <div className="relative">
+              <FaUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+              <input
+                id="name"
+                type="text"
+                required
+                autoComplete="name"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Email Field */}
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="text-xs font-semibold text-foreground-secondary">
+              Email Address
+            </label>
+            <div className="relative">
+              <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+              <input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Password Field */}
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="text-xs font-semibold text-foreground-secondary">
+              Password
+            </label>
+            <div className="relative">
+              <FaLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                autoComplete="new-password"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-9 pr-10 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground text-xs focus:outline-none"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password Field */}
+          <div className="space-y-1.5">
+            <label htmlFor="confirmPassword" className="text-xs font-semibold text-foreground-secondary">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <FaLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+              <input
+                id="confirmPassword"
+                type={showPassword ? 'text' : 'password'}
+                required
+                autoComplete="new-password"
+                placeholder="Re-enter your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full pl-9 pr-10 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full"
+              disabled={isSubmitting}
+              iconRight={!isSubmitting ? <FaArrowRight className="text-xs" /> : null}
+            >
+              {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+            </Button>
+          </div>
+
+          {/* Footer Link */}
+          <p className="text-center text-xs text-foreground-muted pt-3 border-t border-border/40">
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              className="font-bold text-primary hover:text-primary-hover transition-colors ml-1"
+            >
+              Sign in
+            </Link>
+          </p>
+        </form>
+      ) : (
+        /* Step 2: Verification Code Form */
+        <form onSubmit={handleVerification} className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <label htmlFor="code" className="text-xs font-semibold text-foreground-secondary">
+              Verification Code
+            </label>
+            <div className="relative">
+              <FaKey className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+              <input
+                id="code"
+                type="text"
+                required
+                placeholder="Enter 6-digit code"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors tracking-widest"
+              />
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full"
+              disabled={isSubmitting}
+              iconRight={!isSubmitting ? <FaArrowRight className="text-xs" /> : null}
+            >
+              {isSubmitting ? 'Verifying...' : 'Verify & Continue'}
+            </Button>
+          </div>
+
+          <p className="text-center text-xs text-foreground-muted pt-3 border-t border-border/40">
+            Didn't receive code?{' '}
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="font-bold text-primary hover:text-primary-hover transition-colors ml-1"
+            >
+              Resend code
+            </button>
+          </p>
+        </form>
+      )}
+    </AuthLayout>
+  );
+}

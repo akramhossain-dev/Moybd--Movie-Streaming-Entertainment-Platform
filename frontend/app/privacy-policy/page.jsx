@@ -1,91 +1,113 @@
-"use client"
+'use client';
+
 import React from 'react';
-import Navbar from '../component/Navber';
-import Footer from '../component/footer';
+import PublicLayout from '../component/layout/PublicLayout';
+import Container from '../component/ui/Container';
+import Badge from '../component/ui/Badge';
+import {
+  FaShieldAlt,
+  FaUserShield,
+  FaDatabase,
+  FaLock,
+  FaExternalLinkAlt,
+  FaEnvelope,
+} from 'react-icons/fa';
 
-function page() {
+export default function PrivacyPolicyPage() {
+  const sections = [
+    {
+      icon: <FaShieldAlt className="text-primary" />,
+      title: '1. Introduction',
+      content:
+        'At Moybd, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our movie streaming platform, application, and web services.',
+    },
+    {
+      icon: <FaDatabase className="text-primary" />,
+      title: '2. Information We Collect',
+      items: [
+        'Personal identification information (Name, email address upon registration)',
+        'Device details, browser types, and IP addresses for security auditing',
+        'Viewing preferences, search history, and watchlist items',
+        'Authentication tokens and session identifiers',
+      ],
+    },
+    {
+      icon: <FaUserShield className="text-primary" />,
+      title: '3. How We Use Your Information',
+      items: [
+        'Providing and personalizing your movie streaming experience',
+        'Processing account registration and email verification',
+        'Maintaining platform security and preventing unauthorized access',
+        'Analyzing usage patterns to optimize recommendation algorithms',
+      ],
+    },
+    {
+      icon: <FaLock className="text-primary" />,
+      title: '4. Data Security',
+      content:
+        'We implement enterprise-grade security measures including encrypted session tokens and AES payload encryption. However, no method of transmission over the internet is 100% secure.',
+    },
+    {
+      icon: <FaExternalLinkAlt className="text-primary" />,
+      title: '5. Third-Party Services',
+      content:
+        'Our service may contain links to third-party media resources or streaming providers. We are not responsible for the privacy practices or content of third-party platforms.',
+    },
+    {
+      icon: <FaEnvelope className="text-primary" />,
+      title: '6. Contact Us',
+      content:
+        'If you have any questions or concerns regarding this Privacy Policy, please contact our privacy compliance team at privacy@movieapp.com or +880 9638 554567.',
+    },
+  ];
+
   return (
-    <div className="min-h-screen px-4 text-gray-100 bg-black sm:px-6 lg:px-8">
-        <Navbar />
-      {/* Header */}
-      <header className="max-w-4xl mx-auto mb-12 text-center">
-        <h2 className="text-3xl font-semibold">Privacy Policy</h2>
-      </header>
+    <PublicLayout>
+      <section className="relative w-full py-16 sm:py-20 bg-background border-b border-border/40 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none" />
+        <Container className="relative z-10 text-center space-y-4 max-w-3xl">
+          <Badge variant="subtle" size="md">
+            LEGAL & PRIVACY
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+            Privacy Policy
+          </h1>
+          <p className="text-sm sm:text-base text-foreground-muted leading-relaxed">
+            Learn how we handle, protect, and process your data on Moybd. Last updated: August 2026.
+          </p>
+        </Container>
+      </section>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto">
-        <div className="space-y-8">
-          {/* Introduction */}
-          <section className="p-6 bg-gray-900 border-l-4 border-red-600 rounded-lg">
-            <h3 className="mb-4 text-xl font-semibold text-red-500">Introduction</h3>
-            <p className="leading-relaxed text-gray-300">
-              At MOYBD, we take your privacy seriously. This Privacy Policy explains how we collect, 
-              use, disclose, and safeguard your information when you use our mobile application and website.
-            </p>
-          </section>
+      <Container className="py-12 max-w-4xl space-y-6">
+        {sections.map((sec, idx) => (
+          <div
+            key={idx}
+            className="bg-surface rounded-2xl p-6 sm:p-8 border border-border/60 space-y-3 shadow-card"
+          >
+            <div className="flex items-center gap-3 text-xl font-bold text-foreground border-b border-border/40 pb-3">
+              <span className="p-2 bg-primary/10 rounded-lg text-sm">{sec.icon}</span>
+              <h2>{sec.title}</h2>
+            </div>
 
-          {/* Information We Collect */}
-          <section className="p-6 bg-gray-900 border-l-4 border-red-600 rounded-lg">
-            <h3 className="mb-4 text-xl font-semibold text-red-500">Information We Collect</h3>
-            <ul className="space-y-2 text-gray-300 list-disc list-inside">
-              <li>Personal identification information (Name, email address)</li>
-              <li>Device information and usage data</li>
-              <li>Viewing history and preferences</li>
-              <li>Payment information when applicable</li>
-            </ul>
-          </section>
+            {sec.content && (
+              <p className="text-sm text-foreground-secondary leading-relaxed pt-1">
+                {sec.content}
+              </p>
+            )}
 
-          {/* How We Use Your Information */}
-          <section className="p-6 bg-gray-900 border-l-4 border-red-600 rounded-lg">
-            <h3 className="mb-4 text-xl font-semibold text-red-500">How We Use Your Information</h3>
-            <div className="space-y-3 text-gray-300">
-              <p>We use the collected information for:</p>
-              <ul className="ml-4 space-y-2 list-disc list-inside">
-                <li>Providing and improving our services</li>
-                <li>Personalizing your experience</li>
-                <li>Processing your transactions</li>
-                <li>Sending periodic emails and updates</li>
-                <li>Analyzing usage patterns and trends</li>
+            {sec.items && (
+              <ul className="space-y-2 text-sm text-foreground-secondary pt-1">
+                {sec.items.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
-            </div>
-          </section>
-
-          {/* Data Security */}
-          <section className="p-6 bg-gray-900 border-l-4 border-red-600 rounded-lg">
-            <h3 className="mb-4 text-xl font-semibold text-red-500">Data Security</h3>
-            <p className="leading-relaxed text-gray-300">
-              We implement appropriate security measures to protect your personal information. 
-              However, no method of transmission over the internet is 100% secure, and we cannot 
-              guarantee absolute security.
-            </p>
-          </section>
-
-          {/* Third-Party Services */}
-          <section className="p-6 bg-gray-900 border-l-4 border-red-600 rounded-lg">
-            <h3 className="mb-4 text-xl font-semibold text-red-500">Third-Party Services</h3>
-            <p className="leading-relaxed text-gray-300">
-              Our service may contain links to third-party websites. We are not responsible for 
-              the privacy practices or content of these third-party sites.
-            </p>
-          </section>
-
-          {/* Contact Information */}
-          <section className="p-6 bg-gray-900 border-l-4 border-red-600 rounded-lg">
-            <h3 className="mb-4 text-xl font-semibold text-red-500">Contact Us</h3>
-            <p className="leading-relaxed text-gray-300">
-              If you have any questions about this Privacy Policy, please contact us at:
-            </p>
-            <div className="mt-4">
-              <p className="text-red-500">Email: privacy@movieapp.com</p>
-              <p className="text-red-500">Phone: +880 9638 554567</p>
-            </div>
-          </section>
-        </div>
-
-      </main>
-        <Footer />
-    </div>
+            )}
+          </div>
+        ))}
+      </Container>
+    </PublicLayout>
   );
 }
-
-export default page;
