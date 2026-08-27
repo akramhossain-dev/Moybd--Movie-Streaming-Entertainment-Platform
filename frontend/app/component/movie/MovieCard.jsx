@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Badge from '../ui/Badge';
 import { FaPlay, FaStar, FaPlus, FaCheck } from 'react-icons/fa';
+import { isInWatchlist, toggleWatchlist } from '@/app/libs/watchlist';
 
 /**
  * Reusable cinematic MovieCard component.
@@ -11,24 +12,37 @@ import { FaPlay, FaStar, FaPlus, FaCheck } from 'react-icons/fa';
  * Compatible with existing project props (slug, title, smposter, rating, year).
  */
 export default function MovieCard({
+  _id,
   slug,
   title,
   smposter,
   poster,
+  bgposter,
   rating,
   year,
   genre,
   quality = 'HD',
   onClick,
   onWatchlistToggle,
-  isInWatchlist = false,
+  isInWatchlist: propInWatchlist = false,
   className = '',
 }) {
   const router = useRouter();
-  const [inWatchlist, setInWatchlist] = useState(isInWatchlist);
+  const movieId = _id || slug;
+  const [inWatchlist, setInWatchlist] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  useEffect(() => {
+    setInWatchlist(isInWatchlist(movieId));
+  }, [movieId]);
+
   const posterSrc = poster || smposter || '/fallback-poster.png';
+
+  const formattedGenre = Array.isArray(genre)
+    ? genre.join(', ')
+    : typeof genre === 'string'
+    ? genre.replace(/([a-z])([A-Z])/g, '$1, $2')
+    : '';
 
   const handleCardClick = (e) => {
     if (onClick) {
@@ -40,9 +54,21 @@ export default function MovieCard({
 
   const handleWatchlist = (e) => {
     e.stopPropagation();
-    setInWatchlist(!inWatchlist);
+    const movieObj = {
+      _id: movieId,
+      slug,
+      title,
+      smposter: posterSrc,
+      bgposter,
+      rating,
+      year,
+      genre,
+      quality,
+    };
+    const newState = toggleWatchlist(movieObj);
+    setInWatchlist(newState);
     if (onWatchlistToggle) {
-      onWatchlistToggle(!inWatchlist);
+      onWatchlistToggle(newState);
     }
   };
 
@@ -58,7 +84,7 @@ export default function MovieCard({
         }
       }}
       aria-label={`View ${title || 'movie'} details`}
-      className={`group relative flex flex-col w-full bg-card rounded-lg overflow-hidden border border-border/40 hover:border-border transition-all duration-normal hover:shadow-elevated cursor-pointer outline-none ${className}`}
+      className={`group relative flex flex-col w-full bg-card rounded-2xl overflow-hidden border border-purple-900/30 hover:border-primary/50 transition-all duration-normal hover:shadow-glow cursor-pointer outline-none ${className}`}
     >
       {/* Poster Aspect Ratio Container (2:3 aspect ratio) */}
       <div className="relative w-full aspect-[2/3] bg-surface-elevated overflow-hidden">
@@ -74,7 +100,7 @@ export default function MovieCard({
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-normal" />
 
         {/* Top Badges */}
-        <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none z-10">
+        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10">
           {quality && <Badge variant="quality" size="xs">{quality}</Badge>}
           {rating && (
             <Badge variant="rating" size="xs" icon={<FaStar className="text-rating text-[10px]" />}>
@@ -84,7 +110,7 @@ export default function MovieCard({
         </div>
 
         {/* Hover Action Overlay (Desktop & Mobile) */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-normal z-20 bg-overlay/40 backdrop-blur-[2px]">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-normal z-20 bg-overlay/50 backdrop-blur-[2px]">
           <div className="w-12 h-12 rounded-full bg-primary hover:bg-primary-hover text-white flex items-center justify-center shadow-glow transform scale-90 group-hover:scale-100 transition-transform duration-normal">
             <FaPlay className="ml-1 text-sm" />
           </div>
@@ -92,7 +118,11 @@ export default function MovieCard({
           <button
             onClick={handleWatchlist}
             aria-label={inWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-pill bg-surface/90 hover:bg-surface text-xs text-foreground font-medium border border-white/10 transition-colors"
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-pill text-xs font-bold transition-all border ${
+              inWatchlist
+                ? 'bg-success/20 text-success border-success/40'
+                : 'bg-purple-950/90 text-white border-primary/50 hover:bg-primary'
+            }`}
           >
             {inWatchlist ? <FaCheck className="text-success text-[10px]" /> : <FaPlus className="text-[10px]" />}
             <span>{inWatchlist ? 'Added' : 'Watchlist'}</span>
@@ -102,13 +132,13 @@ export default function MovieCard({
 
       {/* Card Metadata */}
       <div className="p-3 flex flex-col gap-1 bg-card">
-        <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+        <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
           {title || 'Untitled'}
         </h3>
         
-        <div className="flex items-center justify-between text-xs text-foreground-muted">
+        <div className="flex items-center justify-between text-[11px] text-foreground-muted">
           <span>{year || 'N/A'}</span>
-          {genre && <span className="line-clamp-1 max-w-[50%]">{genre}</span>}
+          {formattedGenre && <span className="line-clamp-1 max-w-[60%] font-medium">{formattedGenre}</span>}
         </div>
       </div>
     </div>

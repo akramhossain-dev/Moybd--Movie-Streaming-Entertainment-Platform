@@ -1,12 +1,13 @@
-import React from 'react'
-import Dashboard from '../component/Admin_Component/Dashboard'
+'use client';
 
-function page() {
+import React from 'react';
+import AdminLayout from '../component/layout/AdminLayout';
+import Dashboard from '../component/Admin_Component/Dashboard';
+
+export default function AdminPage() {
   return (
-    <>
-    <Dashboard />
-    </>
-  )
+    <AdminLayout>
+      <Dashboard />
+    </AdminLayout>
+  );
 }
-
-export default page

@@ -1,183 +1,167 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import DeleteBtn from '@/app/component/Admin_Component/deleteBtn';
-import UpdateBtn from '@/app/component/Admin_Component/UpdateBtn';
+import AdminLayout from '../../component/layout/AdminLayout';
+import Skeleton from '../../component/feedback/Skeleton';
+import ErrorState from '../../component/feedback/ErrorState';
+import EmptyState from '../../component/feedback/EmptyState';
+import Badge from '../../component/ui/Badge';
+import Button from '../../component/ui/Button';
+import DeleteBtn from '../../component/Admin_Component/deleteBtn';
+import { FaFilm, FaSearch, FaEdit, FaPlus } from 'react-icons/fa';
 
-function Page() {
+export default function AdminMoviesPage() {
+  const [movies, setMovies] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-    const [movies, setMovies] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const moviesPerPage = 12;
-
-    useEffect(() => {
-        async function fetchMovies() {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/publicmovies`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch movies');
-                }
-                const result = await response.json();
-                if (result.success) {
-                    setMovies(result.data.reverse());
-                } else {
-                    setError('Error fetching movies');
-                }
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchMovies();
-    }, []);
-
-    if (loading) {
-        return <div>Loading...</div>;
+  const fetchMovies = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/publicmovies`
+      );
+      if (!response.ok) throw new Error('Failed to fetch movies catalog');
+      const data = await response.json();
+      if (data.success && data.data) {
+        setMovies(data.data.reverse());
+        setFilteredMovies(data.data);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (error) {
-        return <div>Error: {error}</div>;
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredMovies(movies);
+    } else {
+      const q = searchQuery.toLowerCase();
+      setFilteredMovies(
+        movies.filter(
+          (m) =>
+            m.title?.toLowerCase().includes(q) ||
+            m.category?.toLowerCase().includes(q) ||
+            m.year?.toString().includes(q)
+        )
+      );
     }
+  }, [searchQuery, movies]);
 
-    const totalMovies = movies.length;
-    const totalPages = Math.ceil(totalMovies / moviesPerPage);
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header & Controls Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-black text-foreground flex items-center gap-2">
+                <FaFilm className="text-primary" /> Published Catalog
+              </h1>
+              <Badge variant="quality" size="xs">
+                {filteredMovies.length} Titles
+              </Badge>
+            </div>
+            <p className="text-xs text-foreground-muted">
+              Browse, filter, edit, or delete published movies and series.
+            </p>
+          </div>
 
-    const indexOfLastMovie = currentPage * moviesPerPage;
-    const indexOfFirstMovie = indexOfLastMovie - moviesPerPage;
-    const currentMovies = movies.slice(indexOfFirstMovie, indexOfLastMovie);
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative">
+              <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+              <input
+                type="text"
+                placeholder="Search catalog..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-3.5 py-2 bg-surface border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none w-48 sm:w-64"
+              />
+            </div>
 
-    const handlePageChange = (pageNumber) => {
-        if (pageNumber >= 1 && pageNumber <= totalPages) {
-            setCurrentPage(pageNumber);
-        }
-    };
+            <Link href="/admin/addmovie">
+              <Button variant="primary" size="sm" iconLeft={<FaPlus className="text-xs" />}>
+                Add Movie
+              </Button>
+            </Link>
+          </div>
+        </div>
 
-    const renderPagination = () => {
-        const pages = [];
-        const pageRange = 2;
-
-        for (let i = 1; i <= totalPages; i++) {
-            if (
-                i === 1 ||
-                i === totalPages ||
-                (i >= currentPage - pageRange && i <= currentPage + pageRange)
-            ) {
-                pages.push(
-                    <li
-                        key={i}
-                        className={`flex items-center justify-center shrink-0 cursor-pointer text-base font-bold px-[13px] h-9 rounded-md ${i === currentPage ? 'bg-blue-100 text-gray-800' : 'bg-gray-200 text-gray-600'
-                            }`}
-                        onClick={() => handlePageChange(i)}
-                    >
-                        {i}
-                    </li>
-                );
-            } else if (
-                (i === currentPage - pageRange - 1 && currentPage - pageRange > 1) ||
-                (i === currentPage + pageRange + 1 && currentPage + pageRange < totalPages)
-            ) {
-                pages.push(
-                    <li key={i} className="flex items-center justify-center text-gray-500 px-[13px]">
-                        ...
-                    </li>
-                );
-            }
-        }
-
-        return pages;
-    };
-
-    return (
-        <>
-            <div className="w-[60vw] mx-auto mt-3">
-                <div className='flex justify-between mx-2'>
-                    <h1 className="text-3xl font-semibold text-center text-black">| Public Movie List</h1>
-                    <Link href='/admin/addmovie'>
-                        <button
-                            type="button"
-                            className="px-5 py-2.5 rounded-lg text-sm tracking-wider font-medium border border-current outline-none bg-blue-700 hover:bg-transparent text-white hover:text-blue-700 transition-all duration-300"
-                        >
-                            Add
-                        </button>
-                    </Link>
-                </div>
-
-                {Array.isArray(currentMovies) && currentMovies.length > 0 ? (
-                    currentMovies.map((movie, index) => (
-                        <div
-                            key={index}
-                            className="flex flex-row gap-3 p-4 mt-2 border shadow-sm bg-slate-300 rounded-2xl"
-                        >
-                            <div>
-                                <img
-                                    src={movie.bgposter}
-                                    alt={movie.title}
-                                    className="w-[250px] h-auto rounded-xl"
-                                />
-                            </div>
-                            <div className='flex flex-col py-1'>
-                                <div>
-                                    <h2 className="text-base font-bold">{movie.title}</h2>
-                                    <p className="text-sm font-semibold">{movie.category}</p>
-                                    {movie.youtubelink}
-                                    <p className="flex items-center mt-2 gap-0.5">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="18"
-                                            height="18"
-                                            viewBox="0 0 24 24"
-                                            style={{ fill: 'rgba(0, 0, 0, 1)' }}
-                                        >
-                                            <path d="M21.947 9.179a1.001 1.001 0 0 0-.868-.676l-5.701-.453-2.467-5.461a.998.998 0 0 0-1.822-.001L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.213 4.107-1.49 6.452a1 1 0 0 0 1.53 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082c.297-.268.406-.686.278-1.065z"></path>
-                                        </svg>
-                                        {movie.rating}
-                                    </p>
-                                </div>
-                                <div className='flex gap-2'>
-                                    <DeleteBtn movieId={movie._id} />
-                                    <UpdateBtn movieId={movie._id} />
-                                </div>
-                            </div>
+        {/* Content Table */}
+        {loading ? (
+          <Skeleton className="h-64 w-full rounded-2xl" />
+        ) : error ? (
+          <ErrorState message={error} onRetry={fetchMovies} />
+        ) : filteredMovies.length > 0 ? (
+          <div className="bg-surface rounded-2xl border border-border/60 shadow-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border/50 text-foreground-muted uppercase font-semibold bg-surface-elevated/40">
+                    <th className="py-3.5 px-4">Poster & Title</th>
+                    <th className="py-3.5 px-4">Category</th>
+                    <th className="py-3.5 px-4">Rating</th>
+                    <th className="py-3.5 px-4">Year</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30 text-foreground-secondary">
+                  {filteredMovies.map((m) => (
+                    <tr key={m._id} className="hover:bg-surface-elevated/50 transition-colors">
+                      <td className="py-3 px-4 flex items-center gap-3">
+                        <img
+                          src={m.smposter || m.bgposter}
+                          alt={m.title}
+                          className="w-9 h-13 object-cover rounded-md bg-surface-elevated shrink-0"
+                        />
+                        <div>
+                          <div className="font-bold text-foreground line-clamp-1">{m.title}</div>
+                          <div className="text-[10px] text-foreground-muted font-mono">{m.slug}</div>
                         </div>
-                    ))
-                ) : (
-                    <p>No movies available.</p>
-                )}
+                      </td>
+                      <td className="py-3 px-4">{m.category || 'N/A'}</td>
+                      <td className="py-3 px-4 font-bold text-rating">★ {m.rating || 'N/A'}</td>
+                      <td className="py-3 px-4">{m.year || 'N/A'}</td>
+                      <td className="py-3 px-4">
+                        <Badge variant="quality" size="xs">
+                          {m.status || 'Publish'}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/admin/update/${m._id}`}
+                            className="p-2 bg-surface-elevated hover:bg-primary/20 text-foreground hover:text-primary rounded-lg text-xs transition-colors flex items-center gap-1 font-semibold"
+                          >
+                            <FaEdit /> Edit
+                          </Link>
+                          <DeleteBtn id={m._id} onDeleteSuccess={fetchMovies} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            {/* Pagination */}
-            <div className='flex items-center justify-center my-4'>
-                <ul className="flex justify-center space-x-4 ">
-                    <li
-                        className={`flex items-center justify-center bg-gray-200 rounded-md cursor-pointer shrink-0 w-9 h-9 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                        onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 fill-gray-700" viewBox="0 0 55.753 55.753">
-                            <path
-                                d="M12.745 23.915c.283-.282.59-.52.913-.727L35.266 1.581a5.4 5.4 0 0 1 7.637 7.638L24.294 27.828l18.705 18.706a5.4 5.4 0 0 1-7.636 7.637L13.658 32.464a5.367 5.367 0 0 1-.913-.727 5.367 5.367 0 0 1-1.572-3.911 5.369 5.369 0 0 1 1.572-3.911z"
-                                data-original="#000000" />
-                        </svg>
-                    </li>
-                    {renderPagination()}
-                    <li
-                        className={`flex items-center justify-center bg-gray-200 rounded-md cursor-pointer shrink-0 w-9 h-9 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                        onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 rotate-180 fill-gray-700" viewBox="0 0 55.753 55.753">
-                            <path
-                                d="M12.745 23.915c.283-.282.59-.52.913-.727L35.266 1.581a5.4 5.4 0 0 1 7.637 7.638L24.294 27.828l18.705 18.706a5.4 5.4 0 0 1-7.636 7.637L13.658 32.464a5.367 5.367 0 0 1-.913-.727 5.367 5.367 0 0 1-1.572-3.911 5.369 5.369 0 0 1 1.572-3.911z"
-                                data-original="#000000" />
-                        </svg>
-                    </li>
-                </ul>
-            </div>
-        </>
-    );
+          </div>
+        ) : (
+          <EmptyState
+            title="No published movies found"
+            description="Try clearing your search query or add a new movie to the catalog."
+          />
+        )}
+      </div>
+    </AdminLayout>
+  );
 }
-
-export default Page;

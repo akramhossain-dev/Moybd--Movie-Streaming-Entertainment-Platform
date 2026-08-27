@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthLayout from '../component/layout/AuthLayout';
 import Button from '../component/ui/Button';
+import { toast } from '../component/ui/Toast';
 import crypto from 'crypto';
 import {
   FaEnvelope,
@@ -64,19 +65,28 @@ export default function LoginPage() {
             } else {
               sessionStorage.setItem('isLoggedIn', 'true');
             }
+            toast.success('Signed in successfully!');
             router.push('/');
           } else {
-            setError('Login failed. Please verify your credentials.');
+            const errText = 'Login failed. Please verify your credentials.';
+            setError(errText);
+            toast.error(errText);
           }
         } catch (err) {
-          setError('Unable to process login token response.');
+          const errText = 'Unable to process login token response.';
+          setError(errText);
+          toast.error(errText);
         }
       } else {
-        setError(data.message || 'Invalid email or password.');
+        const errText = data.message || 'Invalid email or password.';
+        setError(errText);
+        toast.error(errText);
       }
     } catch (err) {
       console.error('Error during login:', err);
-      setError('Connection error. Please try again later.');
+      const errText = 'Connection error. Please try again later.';
+      setError(errText);
+      toast.error(errText);
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +100,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         {/* Error Alert Banner */}
         {error && (
-          <div className="flex items-center gap-2.5 p-3.5 bg-danger/10 border border-danger/30 rounded-xl text-danger text-xs font-medium animate-in fade-in">
+          <div className="flex items-center gap-2.5 p-3.5 bg-error/10 border border-error/30 rounded-xl text-error text-xs font-medium animate-in fade-in">
             <FaExclamationCircle className="text-sm shrink-0" />
             <span>{error}</span>
           </div>
@@ -111,7 +121,7 @@ export default function LoginPage() {
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-purple-900/40 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
             />
           </div>
         </div>
@@ -131,7 +141,7 @@ export default function LoginPage() {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-9 pr-10 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+              className="w-full pl-9 pr-10 py-2.5 bg-background border border-purple-900/40 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
             />
             <button
               type="button"
@@ -151,7 +161,7 @@ export default function LoginPage() {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-3.5 h-3.5 rounded border-border/60 bg-background accent-primary text-primary cursor-pointer"
+              className="w-3.5 h-3.5 rounded border-purple-900/40 bg-background accent-primary text-primary cursor-pointer"
             />
             <span>Remember me</span>
           </label>
@@ -179,7 +189,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer Link */}
-        <p className="text-center text-xs text-foreground-muted pt-3 border-t border-border/40">
+        <p className="text-center text-xs text-foreground-muted pt-3 border-t border-purple-900/30">
           Don't have an account?{' '}
           <Link
             href="/signup"

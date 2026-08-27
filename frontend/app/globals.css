@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b0d12;
-  --background-secondary: #121620;
-  --surface: #181d29;
-  --surface-elevated: #222938;
-  --card: #151a24;
-  --overlay: rgba(11, 13, 18, 0.85);
+  --background: #090710;
+  --background-secondary: #0f0b1c;
+  --surface: #17122b;
+  --surface-elevated: #221a3f;
+  --card: #140f26;
+  --overlay: rgba(9, 7, 16, 0.88);
   
-  --foreground: #f8fafc;
-  --foreground-secondary: #94a3b8;
-  --foreground-muted: #64748b;
+  --foreground: #ede9fe;
+  --foreground-secondary: #c4b5fd;
+  --foreground-muted: #94a3b8;
   
-  --border: #1e293b;
-  --border-subtle: #111827;
+  --border: rgba(124, 58, 237, 0.22);
+  --border-subtle: rgba(124, 58, 237, 0.10);
   
-  --primary: #e50914;
-  --primary-hover: #f40612;
-  --primary-active: #b80710;
+  --primary: #7c3aed;
+  --primary-hover: #8b5cf6;
+  --primary-active: #6d28d9;
   
   --rating: #fbbf24;
   --success: #10b981;
@@ -84,9 +84,9 @@ body {
   background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--surface-elevated);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--foreground-muted);
+  background: var(--primary);
 }

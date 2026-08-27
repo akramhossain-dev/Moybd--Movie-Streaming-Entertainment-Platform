@@ -17,16 +17,17 @@ import {
   FaStar,
   FaSignOutAlt,
   FaFilm,
-  FaHeart,
-  FaHistory,
+  FaBookmark,
   FaExclamationTriangle,
   FaThLarge,
 } from 'react-icons/fa';
+import { getWatchlist } from '@/app/libs/watchlist';
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/movies', label: 'Movies' },
   { href: '/series', label: 'Series' },
+  { href: '/watchlist', label: 'Watchlist', hasBadge: true },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -57,11 +58,28 @@ export default function Navbar() {
   const [searchError, setSearchError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [watchlistCount, setWatchlistCount] = useState(0);
 
   // Refs for click outside
   const categoryRef = useRef(null);
   const userMenuRef = useRef(null);
   const searchRef = useRef(null);
+
+  // Watchlist count listener
+  useEffect(() => {
+    const updateCount = () => {
+      const list = getWatchlist();
+      setWatchlistCount(list.length);
+    };
+
+    updateCount();
+    window.addEventListener('watchlist-updated', updateCount);
+    window.addEventListener('storage', updateCount);
+    return () => {
+      window.removeEventListener('watchlist-updated', updateCount);
+      window.removeEventListener('storage', updateCount);
+    };
+  }, []);
 
   // Handle scroll state for sticky backdrop
   useEffect(() => {
@@ -151,9 +169,6 @@ export default function Navbar() {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
         setUserMenuOpen(false);
       }
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        // keep query but dismiss if clicked outside container
-      }
     };
 
     const handleKeyDown = (e) => {
@@ -226,13 +241,19 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-fast relative ${
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-fast relative flex items-center gap-1.5 ${
                     isActive
                       ? 'text-primary font-semibold'
                       : 'text-foreground-secondary hover:text-foreground hover:bg-surface/50'
                   }`}
                 >
-                  {link.label}
+                  {link.label === 'Watchlist' && <FaBookmark className="text-xs" />}
+                  <span>{link.label}</span>
+                  {link.hasBadge && watchlistCount > 0 && (
+                    <span className="px-1.5 py-0.2 text-[10px] font-bold bg-primary text-white rounded-pill shrink-0 shadow-glow">
+                      {watchlistCount}
+                    </span>
+                  )}
                   {isActive && (
                     <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full shadow-glow" />
                   )}
@@ -401,6 +422,13 @@ export default function Navbar() {
 
                       <div className="py-1">
                         <Link
+                          href="/watchlist"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface"
+                        >
+                          <FaBookmark /> My Watchlist ({watchlistCount})
+                        </Link>
+                        <Link
                           href="/admin"
                           onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-2 px-3 py-2 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface"
@@ -480,13 +508,18 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileOpen(false)}
-                    className={`block px-3 py-2.5 rounded-lg text-base font-semibold transition-colors ${
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-base font-semibold transition-colors ${
                       isActive
                         ? 'bg-primary text-white font-bold'
                         : 'text-foreground-secondary hover:bg-surface hover:text-foreground'
                     }`}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
+                    {link.hasBadge && watchlistCount > 0 && (
+                      <span className="px-2 py-0.5 text-xs font-bold bg-primary text-white rounded-pill">
+                        {watchlistCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

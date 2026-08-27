@@ -16,12 +16,13 @@ import {
   FaChevronRight,
   FaClock,
 } from 'react-icons/fa';
+import { isInWatchlist, toggleWatchlist } from '@/app/libs/watchlist';
 
 export default function HeaderSlider() {
   const [movies, setMovies] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [watchlistMap, setWatchlistMap] = useState({});
+  const [watchlistState, setWatchlistState] = useState({});
   const [imageErrorMap, setImageErrorMap] = useState({});
   const router = useRouter();
 
@@ -35,7 +36,14 @@ export default function HeaderSlider() {
         const data = await response.json();
         if (response.ok && data.data) {
           const shuffledMovies = [...data.data].sort(() => 0.5 - Math.random());
-          setMovies(shuffledMovies.slice(0, 5));
+          const slice = shuffledMovies.slice(0, 5);
+          setMovies(slice);
+
+          const initialWatchlistState = {};
+          slice.forEach((m) => {
+            initialWatchlistState[m._id] = isInWatchlist(m._id || m.slug);
+          });
+          setWatchlistState(initialWatchlistState);
         }
       } catch (error) {
         console.error('Error fetching hero slider movies:', error);
@@ -47,7 +55,6 @@ export default function HeaderSlider() {
     fetchMovies();
   }, []);
 
-  // Autoplay interval
   useEffect(() => {
     if (movies.length === 0) return;
     const timer = setInterval(() => {
@@ -65,8 +72,9 @@ export default function HeaderSlider() {
     setCurrentSlide((prev) => (prev + 1) % movies.length);
   };
 
-  const toggleWatchlist = (id) => {
-    setWatchlistMap((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleWatchlistToggle = (movie) => {
+    const isAdded = toggleWatchlist(movie);
+    setWatchlistState((prev) => ({ ...prev, [movie._id]: isAdded }));
   };
 
   if (isLoading) {
@@ -102,7 +110,7 @@ export default function HeaderSlider() {
     <section className="relative w-full h-[65vh] sm:h-[75vh] max-h-[750px] min-h-[480px] overflow-hidden bg-background">
       {movies.map((movie, index) => {
         const isActive = index === currentSlide;
-        const isWatchlisted = !!watchlistMap[movie._id];
+        const isSaved = !!watchlistState[movie._id];
         const hasBgError = !!imageErrorMap[`bg_${movie._id}`];
         const hasSmError = !!imageErrorMap[`sm_${movie._id}`];
 
@@ -137,7 +145,7 @@ export default function HeaderSlider() {
             <div className="absolute inset-0 flex items-end pb-12 sm:pb-16 z-20">
               <Container className="flex flex-col sm:flex-row sm:items-end gap-6 w-full">
                 {/* Poster Thumbnail (Desktop) */}
-                <div className="hidden sm:block w-36 sm:w-44 aspect-[2/3] shrink-0 rounded-xl overflow-hidden shadow-modal border border-white/10 group">
+                <div className="hidden sm:block w-36 sm:w-44 aspect-[2/3] shrink-0 rounded-2xl overflow-hidden shadow-modal border border-purple-900/40 group">
                   <img
                     src={
                       hasSmError
@@ -170,14 +178,14 @@ export default function HeaderSlider() {
                   </div>
 
                   {/* Title */}
-                  <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white drop-shadow-md line-clamp-2">
+                  <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground drop-shadow-md line-clamp-2">
                     {movie.title}
                   </h1>
 
                   {/* Metadata Row */}
                   <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-foreground-secondary">
                     {movie.rating && (
-                      <div className="flex items-center gap-1.5 font-bold text-rating bg-rating/10 px-2 py-0.5 rounded-md border border-rating/20">
+                      <div className="flex items-center gap-1.5 font-bold text-rating bg-rating/10 px-2.5 py-1 rounded-lg border border-amber-500/30">
                         <FaStar className="text-xs" />
                         <span>{movie.rating} IMDb</span>
                       </div>
@@ -206,15 +214,15 @@ export default function HeaderSlider() {
                       variant="secondary"
                       size="lg"
                       iconLeft={
-                        isWatchlisted ? (
+                        isSaved ? (
                           <FaCheck className="text-success text-xs" />
                         ) : (
                           <FaPlus className="text-xs" />
                         )
                       }
-                      onClick={() => toggleWatchlist(movie._id)}
+                      onClick={() => handleWatchlistToggle(movie)}
                     >
-                      {isWatchlisted ? 'In Watchlist' : 'Add to Watchlist'}
+                      {isSaved ? 'In Watchlist' : 'Add to Watchlist'}
                     </Button>
                   </div>
                 </div>
@@ -236,7 +244,7 @@ export default function HeaderSlider() {
               className={`h-1.5 rounded-pill transition-all duration-normal ${
                 idx === currentSlide
                   ? 'w-8 bg-primary shadow-glow'
-                  : 'w-2.5 bg-white/40 hover:bg-white/70'
+                  : 'w-2.5 bg-surface-elevated hover:bg-primary/50'
               }`}
             />
           ))}

@@ -9,28 +9,28 @@ module.exports = {
     extend: {
       colors: {
         background: {
-          DEFAULT: "var(--background, #0b0d12)",
-          secondary: "var(--background-secondary, #121620)",
+          DEFAULT: "var(--background, #090710)",
+          secondary: "var(--background-secondary, #0f0b1c)",
         },
         surface: {
-          DEFAULT: "var(--surface, #181d29)",
-          elevated: "var(--surface-elevated, #222938)",
+          DEFAULT: "var(--surface, #17122b)",
+          elevated: "var(--surface-elevated, #221a3f)",
         },
-        card: "var(--card, #151a24)",
-        overlay: "var(--overlay, rgba(11, 13, 18, 0.85))",
+        card: "var(--card, #140f26)",
+        overlay: "var(--overlay, rgba(9, 7, 16, 0.88))",
         foreground: {
-          DEFAULT: "var(--foreground, #f8fafc)",
-          secondary: "var(--foreground-secondary, #94a3b8)",
-          muted: "var(--foreground-muted, #64748b)",
+          DEFAULT: "var(--foreground, #ede9fe)",
+          secondary: "var(--foreground-secondary, #c4b5fd)",
+          muted: "var(--foreground-muted, #94a3b8)",
         },
         border: {
-          DEFAULT: "var(--border, #1e293b)",
-          subtle: "var(--border-subtle, #111827)",
+          DEFAULT: "var(--border, #2a204d)",
+          subtle: "var(--border-subtle, #191238)",
         },
         primary: {
-          DEFAULT: "var(--primary, #e50914)",
-          hover: "var(--primary-hover, #f40612)",
-          active: "var(--primary-active, #b80710)",
+          DEFAULT: "var(--primary, #7c3aed)",
+          hover: "var(--primary-hover, #8b5cf6)",
+          active: "var(--primary-active, #6d28d9)",
         },
         rating: "var(--rating, #fbbf24)",
         success: "var(--success, #10b981)",
@@ -42,7 +42,7 @@ module.exports = {
         subtle: "0 2px 8px rgba(0, 0, 0, 0.3)",
         elevated: "0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5)",
         modal: "0 25px 50px -12px rgba(0, 0, 0, 0.85)",
-        glow: "0 0 20px rgba(229, 9, 20, 0.35)",
+        glow: "0 0 24px rgba(124, 58, 237, 0.45)",
       },
       borderRadius: {
         sm: "0.375rem",

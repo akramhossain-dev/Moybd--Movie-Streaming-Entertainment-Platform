@@ -5,6 +5,7 @@ import PublicLayout from '../component/layout/PublicLayout';
 import Container from '../component/ui/Container';
 import Button from '../component/ui/Button';
 import Badge from '../component/ui/Badge';
+import { toast } from '../component/ui/Toast';
 import {
   FaPhoneAlt,
   FaEnvelope,
@@ -56,18 +57,23 @@ export default function ContactPage() {
           type: 'success',
           message: 'Your message has been sent successfully! We will get back to you shortly.',
         });
+        toast.success('Your message has been sent successfully!');
       } else {
+        const errorMsg = data.message || 'Failed to send your message. Please try again.';
         setStatus({
           type: 'error',
-          message: data.message || 'Failed to send your message. Please try again.',
+          message: errorMsg,
         });
+        toast.error(errorMsg);
       }
     } catch (error) {
       console.error('An error occurred:', error);
+      const errMsg = 'Something went wrong. Please try again later.';
       setStatus({
         type: 'error',
-        message: 'Something went wrong. Please try again later.',
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -76,13 +82,13 @@ export default function ContactPage() {
   return (
     <PublicLayout>
       {/* Hero Section */}
-      <section className="relative w-full py-16 sm:py-20 bg-background border-b border-border/40 overflow-hidden">
+      <section className="relative w-full py-16 sm:py-20 bg-background border-b border-purple-900/40 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none" />
         <Container className="relative z-10 text-center space-y-4 max-w-3xl">
           <Badge variant="new" size="md">
             CONTACT SUPPORT
           </Badge>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
             We'd Love to Hear From You
           </h1>
           <p className="text-sm sm:text-base text-foreground-muted leading-relaxed">
@@ -94,7 +100,7 @@ export default function ContactPage() {
       <Container className="py-12 space-y-12 max-w-5xl">
         {/* Contact Info Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-surface rounded-2xl p-6 border border-border/60 text-center space-y-3 shadow-card hover:border-primary/40 transition-colors">
+          <div className="bg-surface rounded-2xl p-6 border border-purple-900/40 text-center space-y-3 shadow-card hover:border-primary/40 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto">
               <FaPhoneAlt className="text-lg" />
             </div>
@@ -102,7 +108,7 @@ export default function ContactPage() {
             <p className="text-xs text-foreground-muted">+880 9638 554567</p>
           </div>
 
-          <div className="bg-surface rounded-2xl p-6 border border-border/60 text-center space-y-3 shadow-card hover:border-primary/40 transition-colors">
+          <div className="bg-surface rounded-2xl p-6 border border-purple-900/40 text-center space-y-3 shadow-card hover:border-primary/40 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto">
               <FaEnvelope className="text-lg" />
             </div>
@@ -110,7 +116,7 @@ export default function ContactPage() {
             <p className="text-xs text-foreground-muted">support@movieapp.com</p>
           </div>
 
-          <div className="bg-surface rounded-2xl p-6 border border-border/60 text-center space-y-3 shadow-card hover:border-primary/40 transition-colors">
+          <div className="bg-surface rounded-2xl p-6 border border-purple-900/40 text-center space-y-3 shadow-card hover:border-primary/40 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto">
               <FaMapMarkerAlt className="text-lg" />
             </div>
@@ -120,8 +126,8 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Form Container */}
-        <div className="bg-surface rounded-2xl p-6 sm:p-10 border border-border/60 shadow-modal space-y-6">
-          <div className="space-y-1 border-b border-border/40 pb-4">
+        <div className="bg-surface rounded-2xl p-6 sm:p-10 border border-purple-900/40 shadow-modal space-y-6">
+          <div className="space-y-1 border-b border-purple-900/30 pb-4">
             <h2 className="text-2xl font-bold text-foreground">Send Us a Message</h2>
             <p className="text-xs sm:text-sm text-foreground-muted">
               Fill out the form below and our team will respond within 24 hours.
@@ -134,7 +140,7 @@ export default function ContactPage() {
               className={`flex items-center gap-2.5 p-4 rounded-xl text-xs font-medium border animate-in fade-in ${
                 status.type === 'success'
                   ? 'bg-success/10 border-success/30 text-success'
-                  : 'bg-danger/10 border-danger/30 text-danger'
+                  : 'bg-error/10 border-error/30 text-error'
               }`}
             >
               {status.type === 'success' ? (
@@ -163,7 +169,7 @@ export default function ContactPage() {
                     placeholder="Enter your name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-purple-900/40 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -183,7 +189,7 @@ export default function ContactPage() {
                     placeholder="name@example.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-purple-900/40 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -204,7 +210,7 @@ export default function ContactPage() {
                   placeholder="How can we help you?"
                   value={formData.subject}
                   onChange={handleChange}
-                  className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-background border border-purple-900/40 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors"
                 />
               </div>
             </div>
@@ -224,7 +230,7 @@ export default function ContactPage() {
                   placeholder="Type your message here..."
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full pl-9 pr-3.5 py-3 bg-background border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors resize-none"
+                  className="w-full pl-9 pr-3.5 py-3 bg-background border border-purple-900/40 focus:border-primary text-foreground text-xs rounded-xl outline-none transition-colors resize-none"
                 />
               </div>
             </div>

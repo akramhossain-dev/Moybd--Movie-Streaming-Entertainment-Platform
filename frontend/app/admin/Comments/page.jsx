@@ -1,280 +1,281 @@
 'use client';
-import React, { useState, useEffect } from "react";
-import axios from "axios";
 
-function Page() {
-    const [comments, setComments] = useState([]);
-    const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [commentToDelete, setCommentToDelete] = useState(null);
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import AdminLayout from '../../component/layout/AdminLayout';
+import Skeleton from '../../component/feedback/Skeleton';
+import ErrorState from '../../component/feedback/ErrorState';
+import EmptyState from '../../component/feedback/EmptyState';
+import Badge from '../../component/ui/Badge';
+import Button from '../../component/ui/Button';
+import { FaComments, FaSearch, FaTrash, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const commentsPerPage = 20;
+export default function CommentsPage() {
+  const [comments, setComments] = useState([]);
+  const [filteredComments, setFilteredComments] = useState([]);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-    // Fetch comments from the API
-    useEffect(() => {
-        const fetchComments = async () => {
-            try {
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/comments/all`);
-                setComments(response.data.comments || []);
-            } catch (err) {
-                setError("Failed to fetch comments");
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+  const [currentPage, setCurrentPage] = useState(1);
+  const commentsPerPage = 15;
 
-        fetchComments();
-    }, []);
-
-    // Show modal for delete confirmation
-    const handleShowModal = (comment) => {
-        setCommentToDelete(comment);
-        setShowModal(true);
-    };
-
-    // Handle comment deletion
-    const handleDeleteComment = async () => {
-        try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/comments/delete/${commentToDelete._id}`);
-            setComments((prevComments) => prevComments.filter((comment) => comment._id !== commentToDelete._id));
-        } catch (err) {
-            setError("Failed to delete comment");
-            console.error(err);
-        } finally {
-            setShowModal(false);
-            setCommentToDelete(null);
-        }
-    };
-
-    // Handle comment status update
-    const handleStatusChange = async (commentId, newStatus) => {
-        try {
-            const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/comments/update/${commentId}`, {
-                status: newStatus,
-            });
-            if (response.data.success) {
-                setComments((prevComments) =>
-                    prevComments.map((comment) =>
-                        comment._id === commentId ? { ...comment, status: newStatus } : comment
-                    )
-                );
-            } else {
-                setError("Failed to update comment status");
-            }
-        } catch (err) {
-            setError("Failed to update comment status");
-            console.error(err);
-        }
-    };
-
-    // Pagination logic
-    const totalComments = comments.length;
-    const totalPages = Math.ceil(totalComments / commentsPerPage);
-    const indexOfLastComment = currentPage * commentsPerPage;
-    const indexOfFirstComment = indexOfLastComment - commentsPerPage;
-    const currentComments = comments.slice(indexOfFirstComment, indexOfLastComment);
-
-    const handlePageChange = (pageNumber) => {
-        if (pageNumber > 0 && pageNumber <= totalPages) {
-            setCurrentPage(pageNumber);
-        }
-    };
-
-    const renderPagination = () => {
-        const paginationItems = [];
-
-        paginationItems.push(
-            <li
-                key={1}
-                className={`flex items-center justify-center px-4 py-2 rounded-md cursor-pointer ${
-                    currentPage === 1 ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"
-                }`}
-                onClick={() => handlePageChange(1)}
-            >
-                1
-            </li>
-        );
-
-        if (currentPage > 3) {
-            paginationItems.push(
-                <li key="start-ellipsis" className="flex items-center justify-center px-2 text-gray-600">
-                    ...
-                </li>
-            );
-        }
-
-        for (let i = Math.max(2, currentPage - 1); i <= Math.min(currentPage + 1, totalPages - 1); i++) {
-            paginationItems.push(
-                <li
-                    key={i}
-                    className={`flex items-center justify-center px-4 py-2 rounded-md cursor-pointer ${
-                        currentPage === i ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"
-                    }`}
-                    onClick={() => handlePageChange(i)}
-                >
-                    {i}
-                </li>
-            );
-        }
-
-        if (currentPage < totalPages - 2) {
-            paginationItems.push(
-                <li key="end-ellipsis" className="flex items-center justify-center px-2 text-gray-600">
-                    ...
-                </li>
-            );
-        }
-
-        if (totalPages > 1) {
-            paginationItems.push(
-                <li
-                    key={totalPages}
-                    className={`flex items-center justify-center px-4 py-2 rounded-md cursor-pointer ${
-                        currentPage === totalPages ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"
-                    }`}
-                    onClick={() => handlePageChange(totalPages)}
-                >
-                    {totalPages}
-                </li>
-            );
-        }
-
-        return paginationItems;
-    };
-
-    if (isLoading) {
-        return <p className="text-center">Loading comments...</p>;
+  const fetchComments = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/comments/all`
+      );
+      if (response.data && response.data.comments) {
+        setComments(response.data.comments);
+        setFilteredComments(response.data.comments);
+      }
+    } catch (err) {
+      setError('Failed to fetch comments moderation list');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    return (
-        <>
-            <h1 className="text-4xl font-semibold text-center">Comments List</h1>
-            {error && <p className="text-center text-red-500">{error}</p>}
-            <div className="flex flex-col justify-center overflow-x-auto w-[60vw] mx-auto mt-4 pl-5">
-                <table className="bg-white border border-gray-200">
-                    <thead className="bg-gray-800">
-                        <tr>
-                            <th className="p-4 text-sm font-medium text-left text-white">Name</th>
-                            <th className="p-4 text-sm font-medium text-left text-white">Title</th>
-                            <th className="p-4 text-sm font-medium text-left text-white">Comment</th>
-                            <th className="p-4 text-sm font-medium text-left text-white">Status</th>
-                            <th className="p-4 text-sm font-medium text-left text-white">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="whitespace-nowrap">
-                        {currentComments.map((comment) => (
-                            <tr key={comment._id} className="even:bg-blue-50">
-                                <td className="p-4 text-sm text-black">{comment.commentName}</td>
-                                <td className="p-4 text-sm text-black">{comment.title}</td>
-                                <td className="p-4 text-sm text-black">{comment.comment}</td>
-                                <td className="p-4 text-sm text-black">{comment.status}</td>
-                                <td className="p-4">
-                                    <button
-                                        className={`px-4 py-2 text-sm font-semibold text-white rounded ${
-                                            comment.status === "Publish"
-                                                ? "bg-red-500 hover:bg-red-700"
-                                                : "bg-blue-500 hover:bg-blue-700"
-                                        }`}
-                                        onClick={() =>
-                                            handleStatusChange(comment._id, comment.status === "Publish" ? "Draft" : "Publish")
-                                        }
-                                    >
-                                        Make {comment.status === "Publish" ? "Draft" : "Publish"}
-                                    </button>
-                                    <button
-                                        className="px-4 py-2 ml-2 text-sm font-semibold text-white bg-red-500 rounded hover:bg-red-700"
-                                        onClick={() => handleShowModal(comment)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+  useEffect(() => {
+    fetchComments();
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredComments(comments);
+    } else {
+      const q = searchQuery.toLowerCase();
+      setFilteredComments(
+        comments.filter(
+          (c) =>
+            c.name?.toLowerCase().includes(q) ||
+            c.comment?.toLowerCase().includes(q) ||
+            c.movieTitle?.toLowerCase().includes(q)
+        )
+      );
+    }
+    setCurrentPage(1);
+  }, [searchQuery, comments]);
+
+  const handleShowModal = (comment) => {
+    setCommentToDelete(comment);
+    setShowModal(true);
+  };
+
+  const handleDeleteComment = async () => {
+    if (!commentToDelete) return;
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/comments/delete/${commentToDelete._id}`
+      );
+      setComments((prev) => prev.filter((c) => c._id !== commentToDelete._id));
+    } catch (err) {
+      setError('Failed to delete comment');
+      console.error(err);
+    } finally {
+      setShowModal(false);
+      setCommentToDelete(null);
+    }
+  };
+
+  const handleStatusChange = async (commentId, newStatus) => {
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/comments/update/${commentId}`,
+        { status: newStatus }
+      );
+      if (response.data.success) {
+        setComments((prev) =>
+          prev.map((c) => (c._id === commentId ? { ...c, status: newStatus } : c))
+        );
+      } else {
+        setError('Failed to update comment status');
+      }
+    } catch (err) {
+      setError('Failed to update comment status');
+      console.error(err);
+    }
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredComments.length / commentsPerPage) || 1;
+  const indexOfLastComment = currentPage * commentsPerPage;
+  const indexOfFirstComment = indexOfLastComment - commentsPerPage;
+  const currentComments = filteredComments.slice(indexOfFirstComment, indexOfLastComment);
+
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header & Search */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-black text-foreground flex items-center gap-2">
+                <FaComments className="text-primary" /> Comment Moderation
+              </h1>
+              <Badge variant="subtle" size="xs">
+                {filteredComments.length} Comments
+              </Badge>
+            </div>
+            <p className="text-xs text-foreground-muted">
+              Approve, unpublish, or delete user reviews and comments.
+            </p>
+          </div>
+
+          <div className="relative">
+            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted text-xs" />
+            <input
+              type="text"
+              placeholder="Search comments or users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-3.5 py-2 bg-surface border border-border/60 focus:border-primary text-foreground text-xs rounded-xl outline-none w-48 sm:w-64"
+            />
+          </div>
+        </div>
+
+        {/* Content Table */}
+        {isLoading ? (
+          <Skeleton className="h-64 w-full rounded-2xl" />
+        ) : error ? (
+          <ErrorState message={error} onRetry={fetchComments} />
+        ) : filteredComments.length > 0 ? (
+          <div className="bg-surface rounded-2xl border border-border/60 shadow-card overflow-hidden space-y-4">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border/50 text-foreground-muted uppercase font-semibold bg-surface-elevated/40">
+                    <th className="py-3.5 px-4">User</th>
+                    <th className="py-3.5 px-4">Comment</th>
+                    <th className="py-3.5 px-4">Movie Title</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30 text-foreground-secondary">
+                  {currentComments.map((c) => {
+                    const isPublished = c.status === 'Publish';
+                    return (
+                      <tr key={c._id} className="hover:bg-surface-elevated/50 transition-colors">
+                        <td className="py-3 px-4 font-bold text-foreground">
+                          {c.name || 'Anonymous'}
+                        </td>
+                        <td className="py-3 px-4 max-w-xs truncate text-foreground-secondary">
+                          "{c.comment}"
+                        </td>
+                        <td className="py-3 px-4 text-foreground font-medium">
+                          {c.movieTitle || 'Movie'}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              isPublished
+                                ? 'bg-success/10 text-success border border-success/30'
+                                : 'bg-warning/10 text-warning border border-warning/30'
+                            }`}
+                          >
+                            {isPublished ? 'Published' : 'Draft'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {isPublished ? (
+                              <button
+                                onClick={() => handleStatusChange(c._id, 'Draft')}
+                                className="px-2.5 py-1.5 bg-warning/10 hover:bg-warning/20 text-warning rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                                title="Unpublish comment"
+                              >
+                                <FaTimesCircle className="text-[10px]" /> Unpublish
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleStatusChange(c._id, 'Publish')}
+                                className="px-2.5 py-1.5 bg-success/10 hover:bg-success/20 text-success rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                                title="Approve & Publish comment"
+                              >
+                                <FaCheckCircle className="text-[10px]" /> Approve
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => handleShowModal(c)}
+                              className="px-2.5 py-1.5 bg-danger/10 hover:bg-danger/20 text-danger rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                            >
+                              <FaTrash className="text-[10px]" /> Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-center my-4">
-                <ul className="flex space-x-2">
-                    <li
-                        className={`flex items-center justify-center w-9 h-9 rounded-md cursor-pointer ${
-                            currentPage === 1 ? "opacity-50 cursor-not-allowed" : "bg-gray-200 text-gray-600"
-                        }`}
-                        onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                        Prev
-                    </li>
-                    {renderPagination()}
-                    <li
-                        className={`flex items-center justify-center w-9 h-9 rounded-md cursor-pointer ${
-                            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "bg-gray-200 text-gray-600"
-                        }`}
-                        onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                        Next
-                    </li>
-                </ul>
-            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between p-4 border-t border-border/40 text-xs text-foreground-muted">
+                <span>
+                  Showing {indexOfFirstComment + 1}–
+                  {Math.min(indexOfLastComment, filteredComments.length)} of {filteredComments.length} comments
+                </span>
 
-            {/* Delete Confirmation Modal */}
-            {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center p-4 bg-black bg-opacity-50">
-                <div className="relative w-full max-w-lg p-6 bg-white rounded-lg shadow-lg">
-                    <svg
-                        onClick={() => setShowModal(false)}
-                        className="w-3.5 cursor-pointer shrink-0 fill-gray-400 hover:fill-red-500 float-right"
-                        viewBox="0 0 320.591 320.591"
-                    >
-                        <path
-                            d="M30.391 318.583a30.37 30.37 0 0 1-21.56-7.288c-11.774-11.844-11.774-30.973 0-42.817L266.643 10.665c12.246-11.459 31.462-10.822 42.921 1.424 10.362 11.074 10.966 28.095 1.414 39.875L51.647 311.295a30.366 30.366 0 0 1-21.256 7.288z"
-                        ></path>
-                        <path
-                            d="M287.9 318.583a30.37 30.37 0 0 1-21.257-8.806L8.83 51.963C-2.078 39.225-.595 20.055 12.143 9.146c11.369-9.736 28.136-9.736 39.504 0l259.331 257.813c12.243 11.462 12.876 30.679 1.414 42.922-.456.487-.927.958-1.414 1.414a30.368 30.368 0 0 1-23.078 7.288z"
-                        ></path>
-                    </svg>
-                    <div className="my-4 text-center">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="inline w-14 fill-red-500"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                d="M19 7a1 1 0 0 0-1 1v11.191A1.92 1.92 0 0 1 15.99 21H8.01A1.92 1.92 0 0 1 6 19.191V8a1 1 0 0 0-2 0v11.191A3.918 3.918 0 0 0 8.01 23h7.98A3.918 3.918 0 0 0 20 19.191V8a1 1 0 0 0-1-1Zm1-3h-4V2a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v2H4a1 1 0 0 0 0 2h16a1 1 0 0 0 0-2ZM10 4V3h4v1Z"
-                            />
-                            <path
-                                d="M11 17v-7a1 1 0 0 0-2 0v7a1 1 0 0 0 2 0Zm4 0v-7a1 1 0 0 0-2 0v7a1 1 0 0 0 2 0Z"
-                            />
-                        </svg>
-                        <h4 className="mt-4 text-base font-semibold text-gray-800">
-                            Are you sure you want to delete it?
-                        </h4>
-                        <div className="mt-8 space-x-4 text-center">
-                            <button
-                                type="button"
-                                onClick={() => setShowModal(false)}
-                                className="px-4 py-2 text-sm text-gray-800 bg-gray-200 rounded-lg hover:bg-gray-300"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleDeleteComment}
-                                className={`px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700`}
-                            >
-                              Confirm Delete
-                            </button>
-                        </div>
-                    </div>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                  >
+                    Prev
+                  </Button>
+                  <span className="px-2 font-semibold text-foreground">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                  >
+                    Next
+                  </Button>
                 </div>
-            </div>
+              </div>
             )}
-        </>
-    );
-}
+          </div>
+        ) : (
+          <EmptyState
+            title="No comments found"
+            description="All user reviews have been moderated."
+          />
+        )}
+      </div>
 
-export default Page;
+      {/* Modal Confirmation */}
+      {showModal && commentToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-surface rounded-2xl p-6 border border-border/60 shadow-modal max-w-sm w-full space-y-4 text-center">
+            <h3 className="text-lg font-bold text-foreground">Delete Comment</h3>
+            <p className="text-xs text-foreground-muted">
+              Are you sure you want to delete comment by <span className="text-white font-bold">{commentToDelete.name}</span>?
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleDeleteComment}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AdminLayout>
+  );
+}

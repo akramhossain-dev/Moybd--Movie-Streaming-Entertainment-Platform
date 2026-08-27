@@ -3,6 +3,7 @@
 import React from 'react';
 import Navbar from '../Navber';
 import Footer from '../footer';
+import ToastContainer from '../ui/Toast';
 
 /**
  * Reusable PublicLayout shell for all public user-facing pages.
@@ -11,6 +12,9 @@ import Footer from '../footer';
 export default function PublicLayout({ children, className = '' }) {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-white">
+      {/* Toast Notifications */}
+      <ToastContainer />
+
       {/* Sticky Navbar (z-40) */}
       <Navbar />
 

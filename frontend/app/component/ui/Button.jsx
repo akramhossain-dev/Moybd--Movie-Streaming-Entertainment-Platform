@@ -18,24 +18,24 @@ export default function Button({
   ...props
 }) {
   const baseStyles =
-    'inline-flex items-center justify-center font-medium transition-all duration-fast select-none focus-visible:outline-none';
+    'inline-flex items-center justify-center font-bold tracking-wide transition-all duration-fast select-none focus-visible:outline-none';
 
   const variants = {
     primary:
-      'bg-primary hover:bg-primary-hover active:bg-primary-active text-white shadow-subtle hover:shadow-glow',
+      'bg-primary hover:bg-primary-hover active:bg-primary-active text-white shadow-glow hover:scale-[1.02]',
     secondary:
-      'bg-surface-elevated hover:bg-surface active:bg-surface-elevated text-foreground border border-border/80',
+      'bg-purple-950/80 hover:bg-primary/20 active:bg-purple-900 text-white border border-primary/50 shadow-subtle hover:border-primary',
     ghost:
-      'bg-transparent hover:bg-surface-elevated active:bg-surface text-foreground-secondary hover:text-foreground',
+      'bg-purple-950/40 hover:bg-purple-900/60 active:bg-purple-900 text-purple-200 hover:text-white',
     outline:
-      'bg-transparent border border-border hover:border-primary text-foreground hover:text-primary',
+      'bg-purple-950/50 border border-primary/60 hover:bg-primary hover:border-primary text-white',
     danger:
       'bg-error hover:bg-red-600 text-white shadow-subtle',
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-xs rounded-md gap-1.5 h-8',
-    md: 'px-4 py-2 text-sm rounded-lg gap-2 h-10',
+    sm: 'px-3.5 py-1.5 text-xs rounded-lg gap-1.5 h-8',
+    md: 'px-4 py-2 text-sm rounded-xl gap-2 h-10',
     lg: 'px-6 py-3 text-base rounded-xl gap-2.5 h-12',
   };
 

@@ -19,13 +19,13 @@ export default function IconButton({
 
   const variants = {
     primary:
-      'bg-primary hover:bg-primary-hover active:bg-primary-active text-white shadow-subtle hover:shadow-glow',
+      'bg-primary hover:bg-primary-hover active:bg-primary-active text-white shadow-glow hover:scale-105',
     secondary:
-      'bg-surface-elevated hover:bg-surface text-foreground border border-border/60',
+      'bg-purple-950/80 hover:bg-primary/20 text-white border border-primary/50 shadow-subtle',
     ghost:
-      'bg-transparent hover:bg-surface-elevated text-foreground-secondary hover:text-foreground',
+      'bg-purple-950/40 hover:bg-purple-900/60 text-purple-200 hover:text-white',
     backdrop:
-      'bg-overlay/80 backdrop-blur-md hover:bg-overlay text-white border border-white/10',
+      'bg-purple-950/90 hover:bg-primary text-white border border-primary/50 shadow-glow hover:scale-105',
   };
 
   const sizes = {
