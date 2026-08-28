@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Navbar from '../Navber';
+import Navbar from '../Navbar';
 import Footer from '../footer';
 import ToastContainer from '../ui/Toast';
 

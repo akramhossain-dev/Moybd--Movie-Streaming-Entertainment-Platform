@@ -102,13 +102,21 @@ const movies = async (req, res) => {
 
 const PublicMovies = async (req, res) => {
     try {
-        const publicMovies = await Movie.find({ status: 'Publish' });
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = Math.min(parseInt(req.query.limit, 10) || 100, 100);
+        const skip = (page - 1) * limit;
+
+        const publicMovies = await Movie.find({ status: 'Publish' })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         if (!publicMovies) {
             return res.status(404).json({ message: "No data found" });
         }
 
         const sanitized = publicMovies.map(sanitizeMovieForPublic);
-        res.status(200).json({ success: true, data: sanitized });
+        res.status(200).json({ success: true, page, limit, data: sanitized });
 
     } catch (error) {
         res.status(500).json({ message: error.message });

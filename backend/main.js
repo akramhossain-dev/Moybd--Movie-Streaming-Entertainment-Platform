@@ -12,6 +12,7 @@ import captchaRouter from './api/captcha.js';
 import DownloadRouter from './api/download.js';
 import cors from 'cors';
 import helmet from 'helmet';
+import morgan from 'morgan';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const app = express();
 
 connectDB();
 
+app.use(morgan('combined'));
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: '1mb' }));
 
