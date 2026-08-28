@@ -190,7 +190,7 @@ export default function LoginPage() {
 
         {/* Footer Link */}
         <p className="text-center text-xs text-foreground-muted pt-3 border-t border-purple-900/30">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link
             href="/signup"
             className="font-bold text-primary hover:text-primary-hover transition-colors ml-1"

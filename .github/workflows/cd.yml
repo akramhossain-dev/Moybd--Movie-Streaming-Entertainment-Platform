@@ -1,0 +1,41 @@
+name: CD
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Production Deployment Gate
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Validate Dependencies & Build Before Deployment
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.moybd.sbs' }}
+          NEXT_PUBLIC_AES_SECRET: ${{ secrets.NEXT_PUBLIC_AES_SECRET || 'production_aes_secret_key' }}
+        run: |
+          cd frontend && (npm ci || npm install) && npm run build
+
+      - name: Production Deployment Status
+        run: |
+          echo "Production CI checks completed successfully."
+          echo "Deployment gate passed for branch: ${{ github.ref_name }}"

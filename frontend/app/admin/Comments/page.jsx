@@ -166,7 +166,7 @@ export default function CommentsPage() {
                           {c.name || 'Anonymous'}
                         </td>
                         <td className="py-3 px-4 max-w-xs truncate text-foreground-secondary">
-                          "{c.comment}"
+                          &quot;{c.comment}&quot;
                         </td>
                         <td className="py-3 px-4 text-foreground font-medium">
                           {c.movieTitle || 'Movie'}

@@ -99,7 +99,7 @@ export default function ContactPage() {
             Get in Touch with Moybd Team
           </h1>
           <p className="text-sm sm:text-base text-foreground-secondary leading-relaxed">
-            Have a title request, encountered a technical bug, or need help with streaming downloads? We're here 24/7 to assist you.
+            Have a title request, encountered a technical bug, or need help with streaming downloads? We&apos;re here 24/7 to assist you.
           </p>
         </Container>
       </section>

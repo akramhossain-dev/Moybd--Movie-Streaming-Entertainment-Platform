@@ -14,6 +14,7 @@ import {
   FaDownload,
   FaArrowLeft,
   FaTv,
+  FaFilm,
   FaPlus,
   FaTrash,
 } from 'react-icons/fa';

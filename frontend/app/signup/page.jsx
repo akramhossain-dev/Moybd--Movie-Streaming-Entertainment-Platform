@@ -278,7 +278,7 @@ export default function RegisterPage() {
           </div>
 
           <p className="text-center text-xs text-foreground-muted pt-3 border-t border-border/40">
-            Didn't receive code?{' '}
+            Didn&apos;t receive code?{' '}
             <button
               type="button"
               onClick={() => setStep(1)}
