@@ -97,14 +97,14 @@ Continuous Integration and Continuous Deployment are managed via GitHub Actions 
 ### 1. CI Workflow (`.github/workflows/ci.yml`)
 - **Triggers**: Push or Pull Request to `main` or `master` branches, or manual `workflow_dispatch`.
 - **Jobs**:
-  - `lint`: Runs `npm run lint:frontend` (Next.js ESLint type and code validation).
+  - `lint`: Runs `npm run lint:frontend` with dependency path caching (`**/package-lock.json`).
   - `backend-check`: Executes `node --check backend/main.js` to verify backend syntax.
-  - `build`: Compiles Next.js production build (`npm run build:frontend`).
-  - `docker-build`: Tests Docker image compilation for both `frontend/Dockerfile` and `backend/Dockerfile` using `docker/build-push-action`.
+  - `build`: Compiles Next.js production build (`npm run build:frontend`) with `NEXT_PUBLIC_API_URL`.
+  - `docker-build`: Tests Docker image compilation for `frontend/Dockerfile` (supplying build args `NEXT_PUBLIC_API_URL`) and `backend/Dockerfile` using `docker/build-push-action@v5`.
 
 ### 2. CD Workflow (`.github/workflows/cd.yml`)
 - **Triggers**: Push to `main` or `master` branches.
-- **Behavior**: Enforces production build gate validation prior to deployment notification.
+- **Behavior**: Enforces production Next.js build and backend syntax gate verification prior to deployment notification.
 
 ### 3. CodeQL Security Workflow (`.github/workflows/codeql.yml`)
 - **Triggers**: Weekly schedule and pull requests.
