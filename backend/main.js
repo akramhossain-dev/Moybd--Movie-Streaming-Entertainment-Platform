@@ -11,6 +11,7 @@ import ContactRouter from './api/Contact.js';
 import captchaRouter from './api/captcha.js';
 import DownloadRouter from './api/download.js';
 import cors from 'cors';
+import helmet from 'helmet';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ const app = express();
 
 connectDB();
 
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: '1mb' }));
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS

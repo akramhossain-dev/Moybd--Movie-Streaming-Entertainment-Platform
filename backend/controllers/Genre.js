@@ -1,164 +1,31 @@
 import Movie from '../models/Post.js';
+import { sanitizeMovieForPublic } from '../libs/sanitize.js';
 
-
-const Action = async (req, res) => {
+const getGenreMovies = async (req, res, genreName) => {
     try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Action' });
+        const moviesList = await Movie.find({ status: 'Publish', genre: genreName });
 
-        if (!series) {
+        if (!moviesList) {
             return res.status(404).json({ message: "No data found" });
         }
 
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
+        const sanitized = moviesList.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
-const Adventure = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Adventure' });
+const Action = (req, res) => getGenreMovies(req, res, 'Action');
+const Adventure = (req, res) => getGenreMovies(req, res, 'Adventure');
+const Comedy = (req, res) => getGenreMovies(req, res, 'Comedy');
+const Drama = (req, res) => getGenreMovies(req, res, 'Drama');
+const Crime = (req, res) => getGenreMovies(req, res, 'Crime');
+const Animation = (req, res) => getGenreMovies(req, res, 'Animation');
+const Fantasy = (req, res) => getGenreMovies(req, res, 'Fantasy');
+const Horror = (req, res) => getGenreMovies(req, res, 'Horror');
+const Science_Fiction = (req, res) => getGenreMovies(req, res, 'Science Fiction');
+const Romance = (req, res) => getGenreMovies(req, res, 'Romance');
+const Thriller = (req, res) => getGenreMovies(req, res, 'Thriller');
 
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-
-const Comedy = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Comedy' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Drama = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Drama' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Crime = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Crime' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Animation = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Animation' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Fantasy = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Fantasy' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Horror = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Horror' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Science_Fiction = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Science Fiction' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Romance = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Romance' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-const Thriller = async (req, res) => {
-    try {
-        const series = await Movie.find({status: 'Publish' , genre: 'Thriller' });
-
-        if (!series) {
-            return res.status(404).json({ message: "No data found" });
-        }
-
-        res.status(200).json({ success: true, data: series });
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-
-
-
-
-export { Action , Adventure , Comedy , Drama , Crime , Animation, Fantasy , Horror , Science_Fiction , Romance , Thriller };
+export { Action, Adventure, Comedy, Drama, Crime, Animation, Fantasy, Horror, Science_Fiction, Romance, Thriller };

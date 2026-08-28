@@ -1,9 +1,8 @@
 import User from "../models/user.js";
+import Token from "../models/Token.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer';
-import crypto from 'crypto';
-import { encryptAES } from './crypto.js';
 
 const Register = async (req, res) => {
     try {
@@ -20,11 +19,15 @@ const Register = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-        global.verificationCodes = global.verificationCodes || {};
-        global.verificationCodes[email] = { code: verificationCode, name, hashedPassword };
+        await Token.deleteMany({ email, type: 'verification' });
+        await Token.create({
+            email,
+            code: verificationCode,
+            type: 'verification',
+            payload: { name, hashedPassword }
+        });
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -58,10 +61,11 @@ const verify = async (req, res) => {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        if (global.verificationCodes && global.verificationCodes[email] && global.verificationCodes[email].code === verificationCode) {
-            const { name, hashedPassword } = global.verificationCodes[email];
+        const tokenDoc = await Token.findOne({ email, code: verificationCode, type: 'verification' });
 
-            delete global.verificationCodes[email];
+        if (tokenDoc && tokenDoc.payload) {
+            const { name, hashedPassword } = tokenDoc.payload;
+            await Token.deleteOne({ _id: tokenDoc._id });
 
             const newUser = new User({
                 name: name,
@@ -73,7 +77,7 @@ const verify = async (req, res) => {
 
             res.status(201).json({ success: true, message: 'User registered successfully', user: newUser });
         } else {
-            res.status(400).json({ success: false, message: 'Invalid verification code' });
+            res.status(400).json({ success: false, message: 'Invalid or expired verification code' });
         }
     } catch (error) {
         console.error('Error during verification', error);
@@ -183,8 +187,12 @@ const forgotPassword = async (req, res) => {
 
         const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-        global.resetCodes = global.resetCodes || {};
-        global.resetCodes[email] = resetCode;
+        await Token.deleteMany({ email, type: 'reset' });
+        await Token.create({
+            email,
+            code: resetCode,
+            type: 'reset',
+        });
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -217,17 +225,12 @@ const resetPassword = async (req, res) => {
         if (!resetCode || !newPassword) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
-        let email = null;
-        if (global.resetCodes) {
-            for (const [key, value] of Object.entries(global.resetCodes)) {
-                if (value === resetCode) {
-                    email = key;
-                    break;
-                }
-            }
-        }
-        if (email) {
-            delete global.resetCodes[email];
+
+        const tokenDoc = await Token.findOne({ code: resetCode, type: 'reset' });
+
+        if (tokenDoc) {
+            const email = tokenDoc.email;
+            await Token.deleteOne({ _id: tokenDoc._id });
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
@@ -235,13 +238,12 @@ const resetPassword = async (req, res) => {
 
             res.status(200).json({ success: true, message: 'Password reset successfully' });
         } else {
-            res.status(400).json({ success: false, message: 'Invalid reset code' });
+            res.status(400).json({ success: false, message: 'Invalid or expired reset code' });
         }
     } catch (error) {
         console.error('Error during password reset', error);
         res.status(500).json({ error: 'Error during password reset' });
     }
-}
-
+};
 
 export { Register, Login, logout, verify, forgotPassword, resetPassword, getMe };

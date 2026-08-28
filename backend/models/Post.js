@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const MovieSchema = new mongoose.Schema(
   {
     title: { type: String },
-    slug: { type: String },
+    slug: { type: String, unique: true, sparse: true, index: true },
     bgposter: { type: String },
     smposter: { type: String },
     titlecategory: { type: String },
@@ -51,8 +51,11 @@ const MovieSchema = new mongoose.Schema(
       },
     ],
   },
-  { strict: false }
+  { timestamps: true }
 );
+
+MovieSchema.index({ status: 1, category: 1 });
+MovieSchema.index({ status: 1, titlecategory: 1 });
 
 const Movie = mongoose.model("movie", MovieSchema);
 
