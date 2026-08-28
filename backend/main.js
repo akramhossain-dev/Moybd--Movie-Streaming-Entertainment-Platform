@@ -34,6 +34,10 @@ app.get('/', (req, res) => {
   res.send('Welcome to the homepage');
 });
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/auth', AuthRouter);
 app.use('/api/movie', MovieRouter);
 app.use('/api/comments', CommentsRouter);
