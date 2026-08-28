@@ -27,7 +27,8 @@ export default function UsersPage() {
     setError('');
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/users`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/users`,
+        { withCredentials: true }
       );
       if (response.data && response.data.data) {
         setUsers(response.data.data);
@@ -71,7 +72,8 @@ export default function UsersPage() {
     if (!userToDelete) return;
     try {
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/users/${userToDelete._id}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/users/${userToDelete._id}`,
+        { withCredentials: true }
       );
       setUsers((prev) => prev.filter((u) => u._id !== userToDelete._id));
     } catch (err) {

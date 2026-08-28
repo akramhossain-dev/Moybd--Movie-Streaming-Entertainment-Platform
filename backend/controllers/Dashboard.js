@@ -85,7 +85,7 @@ const Dashboard = async (req, res) => {
 
 const Users = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().select('-password');
 
         if (!users) {
             return res.status(404).json({ message: "No data found" });

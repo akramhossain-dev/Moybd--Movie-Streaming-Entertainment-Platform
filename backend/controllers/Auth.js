@@ -100,39 +100,22 @@ const Login = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
+        const secretKey = process.env.SECRET_KEY;
+        if (!secretKey) {
+            console.error('SECRET_KEY environment variable is not set!');
+            return res.status(500).json({ success: false, message: "Server configuration error" });
+        }
 
-        const sessionId = crypto.randomUUID();
-        const nonce = crypto.randomBytes(16).toString("hex");
-        const timestamp = Date.now().toString();
-        const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000); 
-        
-        const encryptedSid = encryptAES(sessionId, timestamp);
-        const encryptedNonce = encryptAES(nonce, timestamp);
-        const encryptedUserId = encryptAES(findUser._id.toString(), timestamp);
-        const encryptedTimestamp = encryptAES(timestamp, timestamp);
-        const encryptedExpiresAt = encryptAES(expiresAt.toString(), timestamp);
-
-        const tokenPayload = JSON.stringify({
+        const tokenPayload = {
             userId: findUser._id.toString(),
             name: findUser.name,
             email: findUser.email,
             role: findUser.role,
-            iat: Date.now(),
-            exp: Date.now() + (7 * 24 * 60 * 60 * 1000),
-            sid: encryptedSid,
-            nonce: encryptedNonce,
-            timestamp: encryptedTimestamp,
-            expiresAt: encryptedExpiresAt,
-            encryptedUserId: encryptedUserId,
-            isLoggedIn: true
-        });
+        };
 
-        const secretKey = process.env.SECRET_KEY || 'your-fallback-secret-key';
+        const token = jwt.sign(tokenPayload, secretKey, { expiresIn: '7d' });
 
-        const encryptedToken = encryptAES(tokenPayload, secretKey);
-
-
-        res.cookie('auth_token', encryptedToken, {
+        res.cookie('auth_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
@@ -142,11 +125,31 @@ const Login = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'User logged in successfully',
-            token: encryptedToken,
+            token: token,
+            user: {
+                id: findUser._id.toString(),
+                name: findUser.name,
+                email: findUser.email,
+                role: findUser.role,
+            },
         });
     } catch (error) {
         console.error('Error during login', error);
         res.status(500).json({ error: 'Error during login' });
+    }
+};
+
+const getMe = async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: 'Not authenticated' });
+        }
+        res.status(200).json({
+            success: true,
+            user: req.user,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error retrieving profile' });
     }
 };
 
@@ -241,4 +244,4 @@ const resetPassword = async (req, res) => {
 }
 
 
-export { Register, Login,logout, verify, forgotPassword, resetPassword };
+export { Register, Login, logout, verify, forgotPassword, resetPassword, getMe };

@@ -47,10 +47,19 @@ const updateComment = async (req, res) => {
             return res.status(404).json({ success: false, message: "Comment not found" });
         }
 
+        const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'jmhub');
+        const isOwner = req.user && findComment.userId.toString() === req.user.userId;
+
+        if (!isAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: "Not authorized to update this comment" });
+        }
+
         findComment.commentName = commentName || findComment.commentName;
         findComment.comment = comment || findComment.comment;
         findComment.title = title || findComment.title;
-        findComment.status = status || findComment.status;
+        if (isAdmin && status) {
+            findComment.status = status;
+        }
 
         await findComment.save();
 
@@ -71,7 +80,15 @@ const deleteComment = async (req, res) => {
             return res.status(404).json({ success: false, message: "Comment not found" });
         }
 
+        const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'jmhub');
+        const isOwner = req.user && findComment.userId.toString() === req.user.userId;
+
+        if (!isAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: "Not authorized to delete this comment" });
+        }
+
         await Comment.deleteOne({ _id: id });
+        await Movie.updateOne({ _id: findComment.postId }, { $pull: { comments: id } });
 
         res.status(200).json({ success: true, message: "Comment deleted successfully" });
     } catch (error) {

@@ -14,7 +14,6 @@ concurrency:
 
 jobs:
   deploy:
-    name: Production Deployment Gate
     name: Deploy to Production
     runs-on: ubuntu-latest
     environment: production
@@ -31,7 +30,6 @@ jobs:
       - name: Validate Dependencies & Build Before Deployment
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.moybd.sbs' }}
-          NEXT_PUBLIC_AES_SECRET: ${{ secrets.NEXT_PUBLIC_AES_SECRET || 'production_aes_secret_key' }}
         run: |
           cd frontend && (npm ci || npm install) && npm run build
 

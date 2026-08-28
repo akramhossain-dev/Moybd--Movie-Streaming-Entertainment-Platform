@@ -73,6 +73,7 @@ function Comments({ postId, commentId, title }) {
         `${process.env.NEXT_PUBLIC_API_URL}/api/comments/new`,
         {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         }
@@ -106,6 +107,7 @@ function Comments({ postId, commentId, title }) {
         `${process.env.NEXT_PUBLIC_API_URL}/api/comments/update/${editCommentId}`,
         {
           method: 'PUT',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ comment: editCommentText }),
         }
@@ -134,7 +136,7 @@ function Comments({ postId, commentId, title }) {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/comments/delete/${cId}`,
-        { method: 'DELETE' }
+        { method: 'DELETE', credentials: 'include' }
       );
 
       const data = await response.json();

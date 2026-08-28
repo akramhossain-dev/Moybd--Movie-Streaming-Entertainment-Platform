@@ -22,7 +22,8 @@ export default function DraftMoviesPage() {
     setError(null);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/draftmovies`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/draftmovies`,
+        { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch draft movies');
       const data = await response.json();

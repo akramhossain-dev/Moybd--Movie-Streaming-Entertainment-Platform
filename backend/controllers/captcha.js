@@ -10,9 +10,11 @@ const captcha = async (req, res) => {
   if (!token) {
     return res.status(400).json({ error: 'No CAPTCHA token provided' });
   }
-  console.log(token)
-
-  const secretKey = process.env.RECAPTCHA_SECRET_KEY || '6LdAysYqAAAAAC1ORSK7W-ldpYqT-E9UcNgc6OH5';
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secretKey) {
+    console.error('RECAPTCHA_SECRET_KEY environment variable is not configured.');
+    return res.status(500).json({ error: 'reCAPTCHA service is misconfigured on the server.' });
+  }
 
   try {
     const response = await axios.post(

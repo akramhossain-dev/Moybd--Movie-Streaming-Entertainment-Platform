@@ -119,7 +119,8 @@ export default function AddMoviePage() {
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/movie/post`,
-        payload
+        payload,
+        { withCredentials: true }
       );
       toast.success(`${formData.titlecategory} saved successfully to catalog!`);
       setFormData(initialFormData);

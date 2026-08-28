@@ -6,7 +6,6 @@ import Link from 'next/link';
 import AuthLayout from '../component/layout/AuthLayout';
 import Button from '../component/ui/Button';
 import { toast } from '../component/ui/Toast';
-import crypto from 'crypto';
 import {
   FaEnvelope,
   FaLock,
@@ -15,16 +14,6 @@ import {
   FaArrowRight,
   FaExclamationCircle,
 } from 'react-icons/fa';
-
-const decryptAES = (encrypted, secret, iv) => {
-  const key = crypto.createHash('sha256').update(secret).digest();
-  const decipher = crypto.createDecipheriv('aes-256-cbc', key, Buffer.from(iv, 'hex'));
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
-};
-
-const AES_SECRET = process.env.NEXT_PUBLIC_AES_SECRET;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -53,29 +42,18 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (response.ok && data.success && data.token) {
-        try {
-          const decryptedToken = JSON.parse(
-            decryptAES(data.token.Data, AES_SECRET, data.token.iv)
-          );
+      if (response.ok && data.success && data.user) {
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem('isLoggedIn', 'true');
+        if (data.user.id) storage.setItem('userId', data.user.id);
+        if (data.user.name) storage.setItem('name', data.user.name);
+        if (data.user.role) storage.setItem('role', data.user.role);
 
-          if (decryptedToken.isLoggedIn === true) {
-            if (rememberMe) {
-              localStorage.setItem('isLoggedIn', 'true');
-            } else {
-              sessionStorage.setItem('isLoggedIn', 'true');
-            }
-            toast.success('Signed in successfully!');
-            router.push('/');
-          } else {
-            const errText = 'Login failed. Please verify your credentials.';
-            setError(errText);
-            toast.error(errText);
-          }
-        } catch (err) {
-          const errText = 'Unable to process login token response.';
-          setError(errText);
-          toast.error(errText);
+        toast.success('Signed in successfully!');
+        if (data.user.role === 'jmhub' || data.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/');
         }
       } else {
         const errText = data.message || 'Invalid email or password.';

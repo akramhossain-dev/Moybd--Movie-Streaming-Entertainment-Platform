@@ -14,18 +14,26 @@ import cors from 'cors';
 
 dotenv.config();
 
-console.log('MONGODB_URI:', process.env.MONGODB_URI);
-
 const PORT = process.env.PORT || 5000;
 const app = express();
 
 connectDB();
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://moybd.sbs'];
 
 const corsOptions = {
-  origin: true,
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS request blocked: Origin not allowed'));
+    }
+  },
+  credentials: true,
 };
 
 app.use(cors(corsOptions));

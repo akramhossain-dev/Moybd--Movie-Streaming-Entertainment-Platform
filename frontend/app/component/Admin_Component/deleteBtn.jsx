@@ -11,6 +11,7 @@ function DeleteBtn({ movieId }) {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/movie/${movieId}`, {
                 method: 'DELETE',
+                credentials: 'include',
             });
 
             if (!response.ok) {

@@ -5,20 +5,8 @@ import Footer from '../component/Admin_Component/footer';
 import Nav from '../component/Admin_Component/Nav';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import crypto from 'crypto';
 import Link from 'next/link';
 import 'boxicons/css/boxicons.min.css';
-
-const decryptAES = (encrypted, secret, iv) => {
-  const key = crypto.createHash('sha256').update(secret).digest();
-  const decipher = crypto.createDecipheriv('aes-256-cbc', key, Buffer.from(iv, 'hex'));
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
-};
-
-const AES_SECRET = process.env.NEXT_PUBLIC_AES_SECRET; // Make sure this matches your backend
-
 export default function Layout({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('');
@@ -26,10 +14,35 @@ export default function Layout({ children }) {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
+
+  const verifySession = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user && (data.user.role === 'jmhub' || data.user.role === 'admin')) {
+          setIsLoggedIn(true);
+          setUserRole(data.user.role);
+        }
+      }
+    } catch (err) {
+      console.error('Session check error:', err);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
+
+  useEffect(() => {
+    verifySession();
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
         method: 'POST',
@@ -40,37 +53,25 @@ export default function Layout({ children }) {
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.token) {
-          try {
-            const decryptedToken = JSON.parse(
-              decryptAES(data.token.Data, AES_SECRET, data.token.iv)
-            );
-            if (decryptedToken.role === 'jmhub') {
-              setIsLoggedIn(true);
-              setUserRole('jmhub');
-              setError('');
-              alert('Login successful! Welcome back');
-              router.push('/admin');
-            } else {
-              alert('Access denied: Admins only');
-            }
-          } catch (err) {
-            setError('Unable to decrypt data');
-          }
+      const data = await response.json();
+
+      if (response.ok && data.success && data.user) {
+        if (data.user.role === 'jmhub' || data.user.role === 'admin') {
+          const storage = rememberMe ? localStorage : sessionStorage;
+          storage.setItem('isLoggedIn', 'true');
+          storage.setItem('role', data.user.role);
+          if (data.user.id) storage.setItem('userId', data.user.id);
+          if (data.user.name) storage.setItem('name', data.user.name);
+
+          setIsLoggedIn(true);
+          setUserRole(data.user.role);
+          setError('');
+          router.push('/admin');
         } else {
-          setError(data.message || 'Login failed');
+          setError('Access denied: Admin credentials required.');
         }
       } else {
-        const data = await response.json();
-        if (response.status === 401) {
-          setError('User not found');
-        } else if (response.status === 403) {
-          setError('Password invalid');
-        } else {
-          setError(data.message || 'Login failed');
-        }
+        setError(data.message || 'Login failed');
       }
     } catch (error) {
       console.error('Error during login:', error);
@@ -78,9 +79,13 @@ export default function Layout({ children }) {
     }
   };
 
-  useEffect(() => {
-    // Add any necessary logic for checking login status if needed
-  }, []);
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black text-white">
+        <p className="text-sm">Verifying access...</p>
+      </div>
+    );
+  }
 
   if (!isLoggedIn || userRole !== 'jmhub') {
     return (

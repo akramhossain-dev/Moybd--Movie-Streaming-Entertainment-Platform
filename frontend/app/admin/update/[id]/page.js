@@ -144,6 +144,7 @@ export default function UpdateMoviePage() {
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/movie/${id}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })

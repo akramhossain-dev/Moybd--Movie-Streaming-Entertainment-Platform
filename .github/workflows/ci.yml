@@ -63,7 +63,6 @@ jobs:
     needs: [lint, backend-check]
     env:
       NEXT_PUBLIC_API_URL: https://api.moybd.sbs
-      NEXT_PUBLIC_AES_SECRET: ci_build_validation_secret_key
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

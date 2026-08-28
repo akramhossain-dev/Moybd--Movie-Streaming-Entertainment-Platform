@@ -1,16 +1,17 @@
 import express from 'express';
 import { Dashboard, Users, DeleteUser, UpdateRole, movies, DraftMovies, latestMovies , PublicMovies, movie , Series , Bollywood , Hollywood, South, Marvel_Studio, Gujarati, TV_Shows, Web_Series , Anime} from '../controllers/Dashboard.js';
+import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 
 const Dashboardouter = express.Router();
 
-Dashboardouter.get('/', Dashboard);
-Dashboardouter.get('/users', Users);
-Dashboardouter.delete('/users/:id', DeleteUser);
-Dashboardouter.put('/users/:id', UpdateRole);
+Dashboardouter.get('/', verifyToken, verifyAdmin, Dashboard);
+Dashboardouter.get('/users', verifyToken, verifyAdmin, Users);
+Dashboardouter.delete('/users/:id', verifyToken, verifyAdmin, DeleteUser);
+Dashboardouter.put('/users/:id', verifyToken, verifyAdmin, UpdateRole);
 
 Dashboardouter.get('/movies', movies);
 Dashboardouter.get('/publicmovies', PublicMovies);
-Dashboardouter.get('/draftmovies', DraftMovies);
+Dashboardouter.get('/draftmovies', verifyToken, verifyAdmin, DraftMovies);
 Dashboardouter.get('/latestmovies', latestMovies);
 Dashboardouter.get('/movie', movie);
 Dashboardouter.get('/series', Series);

@@ -27,7 +27,8 @@ export default function CommentsPage() {
     setError('');
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/comments/all`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/comments/all`,
+        { withCredentials: true }
       );
       if (response.data && response.data.comments) {
         setComments(response.data.comments);
@@ -71,7 +72,8 @@ export default function CommentsPage() {
     if (!commentToDelete) return;
     try {
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/comments/delete/${commentToDelete._id}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/comments/delete/${commentToDelete._id}`,
+        { withCredentials: true }
       );
       setComments((prev) => prev.filter((c) => c._id !== commentToDelete._id));
     } catch (err) {
@@ -87,7 +89,8 @@ export default function CommentsPage() {
     try {
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL}/api/comments/update/${commentId}`,
-        { status: newStatus }
+        { status: newStatus },
+        { withCredentials: true }
       );
       if (response.data.success) {
         setComments((prev) =>
