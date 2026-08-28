@@ -28,22 +28,22 @@ export default function ListingPageLayout({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('latest');
 
-  const fetchMovies = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) throw new Error('Failed to load catalog');
-      const data = await response.json();
-      setMovies(data.data || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchMovies = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Failed to load catalog');
+        const data = await response.json();
+        setMovies(data.data || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMovies();
   }, [apiUrl]);
 

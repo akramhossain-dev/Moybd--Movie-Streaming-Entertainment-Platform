@@ -45,37 +45,37 @@ function Genre() {
     Thriller: { label: 'Thriller', icon: <FaSkull /> },
   };
 
-  const genreAPIs = {
-    Action: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Action`,
-    Adventure: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Adventure`,
-    Comedy: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Comedy`,
-    Drama: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Drama`,
-    Crime: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Crime`,
-    Animation: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Animation`,
-    Fantasy: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Fantasy`,
-    Horror: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Horror`,
-    Science_Fiction: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Science_Fiction`,
-    Romance: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Romance`,
-    Thriller: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Thriller`,
-  };
-
-  const fetchGenreMovies = async () => {
-    if (!selectedGenre) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(genreAPIs[selectedGenre]);
-      if (!response.ok) throw new Error('Failed to fetch movies for this genre');
-      const data = await response.json();
-      setMovies(data.data || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const genreAPIs = {
+      Action: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Action`,
+      Adventure: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Adventure`,
+      Comedy: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Comedy`,
+      Drama: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Drama`,
+      Crime: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Crime`,
+      Animation: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Animation`,
+      Fantasy: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Fantasy`,
+      Horror: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Horror`,
+      Science_Fiction: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Science_Fiction`,
+      Romance: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Romance`,
+      Thriller: `${process.env.NEXT_PUBLIC_API_URL}/api/genre/Thriller`,
+    };
+
+    const fetchGenreMovies = async () => {
+      if (!selectedGenre || !genreAPIs[selectedGenre]) return;
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(genreAPIs[selectedGenre]);
+        if (!response.ok) throw new Error('Failed to fetch movies for this genre');
+        const data = await response.json();
+        setMovies(data.data || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchGenreMovies();
   }, [selectedGenre]);
 

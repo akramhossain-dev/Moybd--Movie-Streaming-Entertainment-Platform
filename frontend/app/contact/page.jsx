@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import PublicLayout from '../component/layout/PublicLayout';
 import Container from '../component/ui/Container';
 import Button from '../component/ui/Button';
@@ -157,7 +158,7 @@ export default function ContactPage() {
                 <FaQuestionCircle className="text-primary" /> Looking for Instant Answers?
               </h3>
               <p className="text-xs text-foreground-secondary leading-relaxed">
-                Check our <a href="/privacy-policy" className="text-primary hover:underline font-semibold">Privacy Policy</a> or <a href="/Terms-&-Conditions" className="text-primary hover:underline font-semibold">Terms of Service</a> for common technical questions and link security policies.
+                Check our <Link href="/privacy-policy" className="text-primary hover:underline font-semibold">Privacy Policy</Link> or <Link href="/Terms-&-Conditions" className="text-primary hover:underline font-semibold">Terms of Service</Link> for common technical questions and link security policies.
               </p>
             </div>
           </div>
