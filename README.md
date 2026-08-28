@@ -1,138 +1,70 @@
+# Moybd
 
----
+## Overview
 
-# 🎬 Moybd
+Moybd is a full-stack movie and web series streaming and downloading platform built with Next.js App Router and Express.js. It features content browsing, dynamic catalog filtering, server-side search, a secure single-use download token system, user authentication, and an administrative dashboard for content moderation and user management.
 
-## 📌 Overview
+## Features
 
-**Moybd** is a full-stack web application featuring a **Next.js frontend** and a **Node.js (Express) backend**. It includes features such as user authentication, commenting, a contact form, admin dashboard, and categorized movie posts by genre.
+- **Content Catalog**: Browse featured movies, TV series, anime, and category listings (Action, Bollywood, Hollywood, South, etc.).
+- **Dynamic Search**: Server-side search API with debounced autocomplete query support.
+- **Secure Download Gateway**: Server-side tokenized AES-256 link generation preventing direct exposure of underlying media storage URLs.
+- **Authentication**: User registration with email verification codes, password reset flow, and HttpOnly JWT cookie sessions.
+- **Role-Based Access Control**: Protected admin dashboard routes and admin API endpoints (`admin` / `jmhub` roles).
+- **Interactive Moderation**: Comment submission, status approval (`Publish` vs `Draft`), and moderation panel.
+- **Responsive Dark UI**: Custom dark-themed layout built with React, Tailwind CSS, Swiper, and Boxicons.
+- **SEO & Social Sharing**: Dynamic Next.js App Router sitemap generation (`/sitemap.xml`) and per-movie Open Graph / Twitter Card metadata.
 
----
+## Tech Stack
 
-## 🗂️ Project Structure
+- **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS, Axios, Swiper, JS-Cookie, React Icons, Boxicons.
+- **Backend**: Node.js, Express.js (ES Modules), Mongoose, Bcrypt, JsonWebToken, Helmet, Morgan, Express-Rate-Limit, Nodemailer.
+- **Database**: MongoDB (Cloud Atlas / local instance).
+- **Containerization & CI/CD**: Docker, Docker Compose, GitHub Actions.
 
-```
-Moybd/
+## Architecture
+
+Moybd employs a decoupled architecture separating the Next.js client-rendered frontend from the Express REST API backend. Authentication is governed via HttpOnly JWT cookies and verified via Express middleware on protected backend endpoints.
+
+For detailed system diagrams, data flow models, and database schema documentation, see [docs/architecture.md](docs/architecture.md).
+
+## Getting Started
+
+For local installation, environment variable configuration, and development commands, see [docs/development.md](docs/development.md).
+
+## API
+
+For complete REST API endpoint specifications, request/response formats, and authentication requirements, see [docs/api.md](docs/api.md).
+
+## Security
+
+For authentication details, authorization controls, rate limiting, and security header configurations, see [docs/security.md](docs/security.md).
+
+## Deployment
+
+For Docker container setup, environment variable management, and GitHub Actions CI/CD workflows, see [docs/deployment.md](docs/deployment.md).
+
+## Project Structure
+
+```text
+.
 ├── backend/
-│   ├── api/              # API routes for various features
-│   ├── controllers/      # Business logic controllers
-│   ├── libs/             # Utility libraries (e.g., DB connection)
-│   ├── models/           # Mongoose models (e.g., User, Post, Comment)
-│   ├── .env              # Backend environment variables
-│   ├── main.js           # Backend entry point
-│   └── package.json      # Backend dependencies and scripts
+│   ├── api/             # Express API route declarations
+│   ├── controllers/     # Controller business logic
+│   ├── libs/            # Shared utilities (DB connection, sanitization, crypto)
+│   ├── middleware/      # JWT verification, role check, rate limiters
+│   ├── models/          # Mongoose database schemas (User, Post, Comment, Token)
+│   ├── main.js          # Express application entry point
+│   └── Dockerfile       # Backend container definition
 ├── frontend/
-│   ├── app/              # Next.js app pages and components
-│   ├── public/           # Static assets
-│   ├── .env              # Frontend environment variables
-│   ├── package.json      # Frontend dependencies and scripts
-│   ├── next.config.mjs   # Next.js configuration
-│   └── tailwind.config.js# Tailwind CSS configuration
-├── package.json          # Root-level scripts for managing the project
-└── README.md             # Project documentation
+│   ├── app/             # Next.js App Router pages and dynamic routes
+│   ├── next.config.mjs  # Next.js configuration
+│   └── Dockerfile       # Frontend container definition
+├── docs/                # Architecture, API, Development, Security, & Deployment docs
+├── docker-compose.yml   # Multi-container production deployment definition
+└── README.md            # Repository overview
 ```
 
----
+## License
 
-## ✨ Features
-
-- **Frontend**: Built with [Next.js](https://nextjs.org/) and styled using [Tailwind CSS](https://tailwindcss.com/).
-- **Backend**: Powered by [Node.js](https://nodejs.org/) and [Express.js](https://expressjs.com/), connected to MongoDB.
-- **Authentication**: Secure user registration and login.
-- **Comments**: Users can post and manage comments on movie posts.
-- **Contact Form**: Users can send messages and inquiries.
-- **Dashboard**: Admin panel for managing content and users.
-- **Genres & Posts**: Categorization for organizing movies.
-
----
-
-## 🛠️ Installation
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/AkramHossain0/Moybd--Movie-Streaming-Entertainment-Platform
-```
-
-### 2. Install Dependencies
-
-```bash
-npm run install:all
-```
-
-This installs dependencies for both `frontend/` and `backend/`.
-
-### 3. Configure Environment Variables
-
-Create `.env` files in both `frontend/` and `backend/` directories. Add necessary variables such as:
-
-- MongoDB URI
-- API base URLs
-- Secret keys
-- Next.js runtime configs
-
-### 4. Start Development Servers
-
-```bash
-npm run dev
-```
-
-This will start both the frontend and backend in development mode.
-
----
-
-## 📜 Scripts (Root `package.json`)
-
-| Script             | Description                                      |
-|--------------------|--------------------------------------------------|
-| `dev`              | Starts both frontend and backend concurrently    |
-| `frontend`         | Starts only the frontend server                  |
-| `backend`          | Starts only the backend server with `nodemon`   |
-| `install:all`      | Installs dependencies for both frontend & backend |
-| `install:frontend` | Installs only frontend dependencies              |
-| `install:backend`  | Installs only backend dependencies               |
-
----
-
-## 🔍 Backend Details
-
-- **APIs**: Located in `backend/api/`
-- **Controllers**: Business logic in `backend/controllers/`
-- **Models**: Mongoose schemas in `backend/models/`
-- **DB Connection**: Configured in `backend/libs/db.js`
-
----
-
-## 🖥️ Frontend Details
-
-- **Framework**: Built with Next.js
-- **Styling**: Tailwind CSS
-- **Config**: Managed in `next.config.mjs` and `tailwind.config.js`
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!  
-To contribute:
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-name`).
-3. Make your changes.
-4. Commit and push (`git commit -m "Feature: ..." && git push origin feature-name`).
-5. Open a pull request.
-
----
-
-## 📝 License
-
-This project is licensed under the **MIT License**.  
-See the [LICENSE](./LICENSE) file for more details.
-
----
-
-## 📧 Contact
-
-For inquiries or support, reach out at: **[md.akramhossainjisan@gmail.com]**
-
----
+This project is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for details.
