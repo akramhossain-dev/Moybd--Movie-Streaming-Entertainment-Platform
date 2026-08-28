@@ -35,8 +35,12 @@ export default function HeaderSlider() {
         );
         const data = await response.json();
         if (response.ok && data.data) {
-          const shuffledMovies = [...data.data].sort(() => 0.5 - Math.random());
-          const slice = shuffledMovies.slice(0, 5);
+          const arr = [...data.data];
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+          const slice = arr.slice(0, 5);
           setMovies(slice);
 
           const initialWatchlistState = {};

@@ -293,4 +293,24 @@ const latestMovies = async (req, res) => {
     }
 };
 
-export { Dashboard, Users, DeleteUser, UpdateRole, movies, PublicMovies, DraftMovies, latestMovies , movie, Series , Bollywood, Hollywood, South, Marvel_Studio, Gujarati, TV_Shows, Web_Series, Anime };
+const Search = async (req, res) => {
+    try {
+        const q = req.query.q || '';
+        if (!q.trim()) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const regex = new RegExp(q.trim(), 'i');
+        const moviesList = await Movie.find({
+            status: 'Publish',
+            $or: [{ title: regex }, { genre: regex }, { category: regex }, { titlecategory: regex }],
+        }).limit(20);
+
+        const sanitized = moviesList.map(sanitizeMovieForPublic);
+        res.status(200).json({ success: true, data: sanitized });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export { Dashboard, Users, DeleteUser, UpdateRole, movies, PublicMovies, DraftMovies, latestMovies , movie, Series , Bollywood, Hollywood, South, Marvel_Studio, Gujarati, TV_Shows, Web_Series, Anime, Search };

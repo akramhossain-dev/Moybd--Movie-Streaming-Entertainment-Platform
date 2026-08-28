@@ -4,6 +4,16 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer';
 
+const getTransporter = () => {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+};
+
 const Register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -29,13 +39,7 @@ const Register = async (req, res) => {
             payload: { name, hashedPassword }
         });
 
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
+        const transporter = getTransporter();
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
@@ -194,13 +198,7 @@ const forgotPassword = async (req, res) => {
             type: 'reset',
         });
 
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
+        const transporter = getTransporter();
 
         const mailOptions = {
             from: process.env.EMAIL_USER,

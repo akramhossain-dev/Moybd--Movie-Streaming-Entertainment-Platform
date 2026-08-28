@@ -9,6 +9,15 @@ import ErrorState from './component/feedback/ErrorState';
 import Container from './component/ui/Container';
 import Genre from './component/Genre';
 
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 export default function Home() {
   // Latest Movies State
   const [latestMovies, setLatestMovies] = useState([]);
@@ -61,7 +70,7 @@ export default function Home() {
       if (!response.ok) throw new Error('Failed to load popular movies');
       const result = await response.json();
       if (result.success && result.data) {
-        setMovies([...result.data].sort(() => 0.11 - Math.random()).slice(0, 12));
+        setMovies(shuffleArray(result.data).slice(0, 12));
       }
     } catch (err) {
       setErrorMovies(err.message);
@@ -81,7 +90,7 @@ export default function Home() {
       if (!response.ok) throw new Error('Failed to load series');
       const result = await response.json();
       if (result.success && result.data) {
-        setSeries([...result.data].sort(() => 0.11 - Math.random()).slice(0, 12));
+        setSeries(shuffleArray(result.data).slice(0, 12));
       }
     } catch (err) {
       setErrorSeries(err.message);
@@ -101,7 +110,7 @@ export default function Home() {
       if (!response.ok) throw new Error('Failed to load anime');
       const result = await response.json();
       if (result.success && result.data) {
-        setAnime([...result.data].sort(() => 0.11 - Math.random()).slice(0, 12));
+        setAnime(shuffleArray(result.data).slice(0, 12));
       }
     } catch (err) {
       setErrorAnime(err.message);

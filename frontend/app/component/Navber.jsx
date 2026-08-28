@@ -95,51 +95,41 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch movies for search
-  useEffect(() => {
-    const fetchMovies = async () => {
-      setIsSearching(true);
-      setSearchError(null);
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/movies`
-        );
-        if (!response.ok) throw new Error('Failed to fetch search catalog');
-        const data = await response.json();
-        setMovies(data.data || []);
-      } catch (err) {
-        setSearchError(err.message);
-      } finally {
-        setIsSearching(false);
-      }
-    };
-    fetchMovies();
-  }, []);
-
-  // Debounced search filtering
+  // Dynamic server-side search query
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredMovies([]);
+      setIsSearching(false);
       return;
     }
-    const timer = setTimeout(() => {
-      const query = searchQuery.toLowerCase();
-      const results = movies.filter((m) => {
-        const titleStr = typeof m.title === 'string' ? m.title : '';
-        const genreStr = Array.isArray(m.genre)
-          ? m.genre.join(' ')
-          : typeof m.genre === 'string'
-          ? m.genre
-          : '';
-        return (
-          titleStr.toLowerCase().includes(query) ||
-          genreStr.toLowerCase().includes(query)
+
+    setIsSearching(true);
+    setSearchError(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/search?q=${encodeURIComponent(
+            searchQuery.trim()
+          )}`
         );
-      });
-      setFilteredMovies(results);
+        if (!response.ok) throw new Error('Search request failed');
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          setFilteredMovies(data.data);
+        } else {
+          setFilteredMovies([]);
+        }
+      } catch (err) {
+        setSearchError(err.message);
+        setFilteredMovies([]);
+      } finally {
+        setIsSearching(false);
+      }
     }, 250);
+
     return () => clearTimeout(timer);
-  }, [searchQuery, movies]);
+  }, [searchQuery]);
 
   // Auth status check
   useEffect(() => {
