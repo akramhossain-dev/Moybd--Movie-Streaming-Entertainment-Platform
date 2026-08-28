@@ -1,8 +1,10 @@
 import User from "../models/user.js";
 import Token from "../models/Token.js";
+import RevokedToken from "../models/RevokedToken.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 const getTransporter = () => {
   return nodemailer.createTransport({
@@ -114,7 +116,9 @@ const Login = async (req, res) => {
             return res.status(500).json({ success: false, message: "Server configuration error" });
         }
 
+        const jti = crypto.randomUUID();
         const tokenPayload = {
+            jti,
             userId: findUser._id.toString(),
             name: findUser.name,
             email: findUser.email,
@@ -163,6 +167,22 @@ const getMe = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
+        const token = req.cookies?.auth_token || req.headers.authorization?.split(' ')[1];
+        if (token && process.env.SECRET_KEY) {
+            try {
+                const decoded = jwt.verify(token, process.env.SECRET_KEY);
+                if (decoded && decoded.jti) {
+                    await RevokedToken.create({
+                        jti: decoded.jti,
+                        userId: decoded.userId,
+                        reason: 'logout',
+                    });
+                }
+            } catch (err) {
+                // Token invalid or already expired
+            }
+        }
+
         res.clearCookie('auth_token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

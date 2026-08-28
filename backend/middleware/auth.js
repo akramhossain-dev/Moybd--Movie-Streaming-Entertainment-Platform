@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
+import RevokedToken from '../models/RevokedToken.js';
 
 /**
  * Middleware to verify JWT authentication token from cookies or Authorization header.
  */
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   try {
     let token = null;
 
@@ -34,6 +35,15 @@ export const verifyToken = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, secretKey);
+
+    // Check token revocation list if token contains jti
+    if (decoded && decoded.jti) {
+      const isRevoked = await RevokedToken.findOne({ jti: decoded.jti });
+      if (isRevoked) {
+        return res.status(401).json({ success: false, message: 'Session revoked. Please log in again.' });
+      }
+    }
+
     req.user = decoded;
     next();
   } catch (error) {

@@ -13,6 +13,7 @@ import DownloadRouter from './api/download.js';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { attachCSRFToken, verifyCSRF } from './middleware/csrf.js';
 
 dotenv.config();
 
@@ -22,8 +23,26 @@ const app = express();
 connectDB();
 
 app.use(morgan('combined'));
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.google.com", "https://www.gstatic.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+        mediaSrc: ["'self'", "blob:", "https:", "http:"],
+        frameSrc: ["'self'", "https://www.google.com", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
+        connectSrc: ["'self'", "https:", "http:"],
+      },
+    },
+  })
+);
 app.use(express.json({ limit: '1mb' }));
+app.use(attachCSRFToken);
+app.use(verifyCSRF);
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())

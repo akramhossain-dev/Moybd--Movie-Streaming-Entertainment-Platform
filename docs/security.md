@@ -54,18 +54,14 @@ The Moybd platform implements defense-in-depth security controls across the appl
 - **Implementation Status**: `IMPLEMENTED`
 - **Git Tracking**: `.gitignore` excludes `.env`, `*.env`, `.env.*`, `.env.local` recursively. Live secrets are excluded from Git commits.
 
----
+### 9. Token Revocation & Blacklisting
+- **Implementation Status**: `IMPLEMENTED`
+- **Mechanism**: JWTs include a unique `jti` claim. Upon logout or admin revocation, the token `jti` is stored in the MongoDB `RevokedToken` collection with an automatic 7-day TTL expiration index (`expires: 604800`). `verifyToken` checks the revocation list before granting access.
 
-## Security Limitations & Recommendations
+### 10. Anti-CSRF Token Validation
+- **Implementation Status**: `IMPLEMENTED`
+- **Mechanism**: Anti-CSRF double-submit token verification middleware (`verifyCSRF`) generates an `XSRF-TOKEN` cookie and enforces `X-CSRF-Token` or `X-XSRF-TOKEN` header validation on state-changing HTTP requests (`POST`, `PUT`, `DELETE`).
 
-### 1. Token Revocation & Blacklisting
-- **Status**: `MISSING / RECOMMENDED`
-- **Explanation**: JWTs remain valid until their 7-day expiration time unless the client clears the cookie. Implementing a Redis token revocation blacklist is recommended for immediate session termination upon admin ban.
-
-### 2. Anti-CSRF Token Validation
-- **Status**: `PARTIAL / RECOMMENDED`
-- **Explanation**: State-changing requests rely primarily on `SameSite: strict` cookie enforcement. Adding explicit anti-CSRF token headers is recommended for enhanced cross-site protection.
-
-### 3. Content Security Policy (CSP)
-- **Status**: `RECOMMENDED`
-- **Explanation**: While `helmet` sets base security headers, a customized `Content-Security-Policy` header tailored for external video player iFrames (YouTube, third-party embeds) should be configured.
+### 11. Content Security Policy (CSP)
+- **Implementation Status**: `IMPLEMENTED`
+- **Mechanism**: `helmet.contentSecurityPolicy` directives enforce restrictive source origin policies for `default-src`, `script-src` (Google reCAPTCHA), `style-src` (Google Fonts), `img-src` (external movie posters), `media-src` (video streaming targets), and `frame-src` (YouTube & Google embeds).
